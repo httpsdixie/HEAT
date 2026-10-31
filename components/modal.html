@@ -1,0 +1,30 @@
+<!--
+  components/modal.html
+  Redundant Design Component: Modal Lifecycle Component
+  Adheres to PROJECT_RULES.md (ESC close, backdrop dismiss, accessible focus trap)
+-->
+<div id="orchid-modal-backdrop" class="modal-backdrop" style="display: none;" tabindex="-1" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal-dialog" id="orchid-modal-dialog">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge-dot"></span>
+          <h2 class="modal-title" id="orchid-modal-title">Node Telemetry Inspector</h2>
+        </div>
+        <button class="modal-close-btn" id="orchid-modal-close" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" id="orchid-modal-body">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer" id="orchid-modal-footer">
+        <button type="button" class="btn btn-secondary" id="orchid-modal-btn-cancel">Close</button>
+        <button type="button" class="btn btn-primary" id="orchid-modal-btn-action">Acknowledge</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORCHID | Heat Index</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='6' fill='%23a6c4ee'/><ellipse cx='24' cy='10' rx='4' ry='7' fill='%235274aa'/><ellipse cx='24' cy='38' rx='4' ry='7' fill='%23364b76'/><ellipse cx='10' cy='24' rx='7' ry='4' fill='%235274aa'/><ellipse cx='38' cy='24' rx='7' ry='4' fill='%23364b76'/></svg>" />
+  <link rel="stylesheet" href="../css/theme.css?v=ormoc-navy-5" />
+  <link rel="stylesheet" href="../css/layout.css?v=profile-settings-3" />
+  <link rel="stylesheet" href="../css/dashboard.css?v=84" />
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount" class="sidebar-slot"></div>
+    <div class="main-wrapper">
+      <div id="header-mount" class="header-slot"></div>
+      <main class="dashboard-viewport dashboard-viewport--heat-index" id="heat-index-page">
+        <section class="hi-explorer-section" aria-label="Telemetry">
+          <div class="hi-tab-control-card hi-analysis-control-card">
+            <div class="hi-tab-bar" role="group" aria-label="Heat index views">
+              <span class="hi-tab-indicator" aria-hidden="true"></span>
+              <button class="hi-tab active" id="hi-tab-risk" type="button" aria-pressed="true" aria-controls="hi-panel-risk">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/>
+                </svg>
+                Heat Index Trend
+              </button>
+              <button class="hi-tab" id="hi-tab-locations" type="button" aria-pressed="false" aria-controls="hi-panel-locations">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M8 6h13M8 12h13M8 18h13"/>
+                  <path d="M3 6h.01M3 12h.01M3 18h.01"/>
+                </svg>
+                History Data
+              </button>
+            </div>
+            <div id="hi-date-filter-mount"></div>
+            <div class="hi-history-tools" id="hi-history-tools" aria-label="Historical data tools">
+              <label class="hi-history-status-filter">
+                <span class="hi-history-status-label">Status</span>
+                <select id="hi-history-status-filter" class="hi-history-status-select" aria-label="Filter history by risk status">
+                  <option value="all">All statuses</option>
+                  <option value="safe">Safe</option>
+                  <option value="caution">Caution</option>
+                  <option value="extreme-caution">Extreme caution</option>
+                  <option value="danger">Danger</option>
+                  <option value="extreme-danger">Extreme danger</option>
+                </select>
+              </label>
+              <button class="odf-reset hi-history-reset" id="hi-history-reset" type="button"
+                      aria-label="Reset history filters" title="Reset history filters">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+              </button>
+              <label class="hi-history-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="m20 20-4-4"></path>
+                </svg>
+                <input id="hi-history-search" type="search" placeholder="Search history..." aria-label="Search historical data">
+              </label>
+              <div class="hi-history-export-menu">
+                <button class="hi-history-export" id="hi-history-export" type="button"
+                        aria-label="Export historical data" title="Export historical data"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="hi-history-export-options">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <path d="m7 10 5 5 5-5M12 15V3"></path>
+                  </svg>
+                </button>
+                <div class="hi-history-export-options" id="hi-history-export-options" role="menu" aria-label="Export format" hidden>
+                  <button type="button" role="menuitem" data-history-export-format="csv">Export as CSV</button>
+                  <button type="button" role="menuitem" data-history-export-format="pdf">Export as PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <section class="hi-tab-panel status-card" id="hi-panel-risk" role="tabpanel" aria-labelledby="hi-tab-risk">
+            <!-- Multi-line trend chart -->
+            <div class="hi-trend-chart-wrap" id="hi-trend-chart-wrap" aria-label="Heat Index Trend chart">
+              <aside class="hi-trend-card hi-trend-legend-card" aria-labelledby="hi-trend-legend-title">
+                <h2 class="hi-trend-chart-title" id="hi-trend-legend-title">Node Filter</h2>
+                <p class="hi-trend-filter-help">Click a series to show or hide its line.</p>
+                <div class="hi-trend-legend" id="hi-trend-legend" role="group" aria-label="Filter trend by node"></div>
+              </aside>
+              <section class="hi-trend-card hi-trend-graph-card" aria-labelledby="hi-trend-title">
+                <div class="hi-trend-graph-heading">
+                  <h2 class="hi-trend-chart-title" id="hi-trend-title">Heat Index Trend</h2>
+                  <span class="hi-trend-threshold-key">
+                    <span class="hi-trend-legend-dash" aria-hidden="true"></span>
+                    Caution Threshold (32°C)
+                  </span>
+                </div>
+                <p class="hi-trend-mode" id="hi-trend-mode">Average across reporting nodes</p>
+                <div class="hi-trend-chart-area" id="hi-trend-chart-area">
+                  <div class="hi-trend-empty" id="hi-trend-empty">Waiting for sensor data…</div>
+                  <div class="hi-trend-tooltip" id="hi-trend-tooltip" role="status" aria-live="polite" hidden>
+                    <strong class="hi-trend-tooltip-title"></strong>
+                    <span class="hi-trend-tooltip-detail"></span>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+          <section class="hi-tab-panel hi-location-panel status-card data-table-panel" id="hi-panel-locations" role="tabpanel" aria-labelledby="hi-tab-locations" hidden>
+            <div class="hi-table-heading">
+              <div>
+                <h2 class="status-card-title">Historical Heat Index Data Logs</h2>
+                <p>Sensor readings recorded in the selected date range.</p>
+              </div>
+              <span class="hi-live-note">Sorted by newest reading</span>
+            </div>
+            <p class="sensor-data-status hi-data-status" id="map-data-status" role="status" hidden></p>
+            <button type="button" class="btn btn-secondary hi-retry-button" id="hi-retry-button" hidden>Retry sensor connection</button>
+            <div class="hi-table-scroll">
+              <table class="hi-node-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Node ID</th>
+                    <th scope="col">Station / Location</th>
+                    <th scope="col">Heat Index (°C)</th>
+                    <th scope="col">Raw Temp (°C)</th>
+                    <th scope="col">Humidity (%)</th>
+                    <th scope="col">Risk Level</th>
+                  </tr>
+                </thead>
+                <tbody id="hi-node-table-body">
+                  <tr><td class="hi-table-empty" colspan="7">Loading sensor history…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="hi-location-pagination" id="hi-location-pagination"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div id="toast-mount"></div>
+  <div id="modal-mount"></div>
+  <script src="../components/components.js?v=58"></script>
+  <script src="../js/dashboard.js?v=98"></script>
+</body>
+</html>

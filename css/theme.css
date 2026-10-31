@@ -1,0 +1,149 @@
+/* ============================================================
+   THEME.CSS — CENTRAL DESIGN SYSTEM TOKENS
+   Single source of truth for colors, typography, radii, and spacing.
+   Customizing a token here propagates throughout the whole system.
+   Adheres to PROJECT_RULES.md
+   ============================================================ */
+
+:root {
+  /* ── Brand Tokens ── */
+  --brand-name:              "ORCHID";
+  --brand-fullname:          "Ormoc City Heat Index Device";
+  --brand-jurisdiction:       "Ormoc City";
+  --brand-version:           "v1.0.4";
+
+  /* ── Ormoc navy-blue palette ── */
+  --color-accent-rgb:        29, 66, 121;
+  --color-accent-light-rgb:  139, 181, 224;
+  --color-cyan-rgb:          56, 189, 248;
+  --color-green-rgb:         34, 197, 94;
+  --color-yellow-rgb:        245, 158, 11;
+  --color-white-rgb:         255, 255, 255;
+  --color-black-rgb:         0, 0, 0;
+  --bg-base-rgb:             7, 19, 43;
+  --bg-surface-rgb:          10, 27, 57;
+  --bg-surface-elevated-rgb: 16, 39, 80;
+  --bg-card-subtle-rgb:      20, 48, 95;
+  --bg-base:                 #07132b;
+  --bg-surface:              #0a1b39;
+  --bg-surface-elevated:     #102750;
+  --bg-card:                 #102750;
+  --bg-card-subtle:          #14305f;
+  --bg-card-hover:           #1d3968;
+
+  /* ── State & Interactive Backgrounds ── */
+  --bg-active:               #1d4279;
+  --bg-active-glow:          rgba(var(--color-accent-rgb), 0.38);
+  --bg-hover:                rgba(var(--color-accent-light-rgb), 0.14);
+  --bg-pill:                 rgba(var(--color-accent-light-rgb), 0.12);
+  --bg-pill-hover:           rgba(var(--color-accent-light-rgb), 0.24);
+
+  /* ── Semantic Category Tints (Icon badges) ── */
+  --bg-icon-accent:          rgba(var(--color-accent-light-rgb), 0.18);
+  --bg-icon-cyan:            rgba(56, 189, 248, 0.18);
+  --bg-icon-green:           rgba(34, 197, 94, 0.18);
+  --bg-icon-amber:           rgba(245, 158, 11, 0.18);
+  --bg-icon-red:             rgba(239, 68, 68, 0.18);
+
+  /* ── Precision Borders ── */
+  --border-soft:             rgba(255, 255, 255, 0.08);
+  --border-subtle:           rgba(var(--color-accent-light-rgb), 0.18);
+  --border-color:            rgba(var(--color-accent-light-rgb), 0.18);
+  --border-accent:           rgba(var(--color-accent-light-rgb), 0.32);
+  --border-accent-bright:    rgba(var(--color-accent-light-rgb), 0.62);
+
+  /* ── High-Contrast Typography Tokens ── */
+  --text-white:              #ffffff;       /* headers, prime values */
+  --text-body:               #d1d5db;       /* standard readable text (contrast > 5.5:1) */
+  --text-secondary:          #cbd5e1;       /* secondary values */
+  --text-muted:              #94a3b8;       /* captions/units (contrast > 4.5:1 against dark) */
+  --text-nav:                #cbd5e1;       /* sidebar links */
+  --text-label:              #8bb5e0;       /* category taglines */
+
+  /* ── Semantic Colors ── */
+  --color-accent:            #1d4279;
+  --color-accent-hover:      #28599b;
+  --color-accent-light:      #8bb5e0;
+  --color-green:             #22c55e;       /* positive / online / live */
+  --color-green-light:       #86efac;
+  --color-cyan:              #38bdf8;       /* active sensor / humidity */
+  --color-cyan-light:        #7dd3fc;
+  --color-yellow:            #f59e0b;       /* warning / heat / sunny */
+  --color-yellow-light:      #fbbf24;
+  --color-red:               #ef4444;       /* error / destructive / offline */
+  --color-violet:            #a78bfa;       /* pressure */
+  --color-violet-light:      #c4b5fd;
+
+  /* ── Typography Scale ── */
+  --font-base:               system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:               ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-size-xs:            0.7rem;        /* 11.2px */
+  --font-size-sm:            0.8125rem;     /* 13px */
+  --font-size-base:          0.875rem;      /* 14px */
+  --font-size-md:            1rem;          /* 16px */
+  --font-size-lg:            1.125rem;      /* 18px */
+  --font-size-xl:            1.35rem;       /* 21.6px */
+  --font-size-2xl:           1.75rem;       /* 28px */
+  --font-size-hero:          2.5rem;        /* 40px */
+
+  --font-weight-regular:     400;
+  --font-weight-medium:      500;
+  --font-weight-semibold:    600;
+  --font-weight-bold:        700;
+
+  /* ── Proportional Layout Tokens ── */
+  --sidebar-width:           210px;
+  --header-height:           58px;
+  --content-padding:         12px 18px;
+
+  /* ── Unified Corner Radii ── */
+  --radius-sm:               6px;
+  --radius-md:               10px;          /* unified standard for cards, inputs, buttons */
+  --radius-lg:               14px;
+  --radius-pill:             9999px;
+
+  /* ── Shadows & Glows ── */
+  --shadow-card:             0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-glow:             0 0 16px rgba(var(--color-accent-rgb), 0.32);
+  --shadow-glow-cyan:        0 0 14px rgba(56, 189, 248, 0.22);
+
+  /* ── Transitions ── */
+  --transition-fast:         all 0.15s ease-in-out;
+  --transition-normal:       all 0.25s ease-in-out;
+}
+
+/* ── Global Reset & Box Sizing ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Main dashboard one-view requirement: zero vertical scrolling */
+  background: var(--bg-base);
+  color: var(--text-body);
+  font-family: var(--font-base);
+  font-size: var(--font-size-base);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Focus Outline for Accessibility ── */
+:focus-visible {
+  outline: 2px solid var(--color-accent-light);
+  outline-offset: 2px;
+}
+
+/* ── Accessible reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

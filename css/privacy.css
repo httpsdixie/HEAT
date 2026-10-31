@@ -1,0 +1,97 @@
+.privacy-viewport {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  place-items: center;
+  padding: clamp(20px, 4vw, 48px);
+  background:
+    radial-gradient(ellipse at 86% 0%, rgba(var(--color-accent-rgb), 0.26), transparent 38%),
+    var(--bg-base);
+}
+
+.privacy-card {
+  width: min(100%, 560px);
+  padding: clamp(24px, 5vw, 44px);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.privacy-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 18px;
+  place-items: center;
+  border: 1px solid var(--border-accent);
+  border-radius: 50%;
+  background: var(--bg-icon-accent);
+  color: var(--color-accent-light);
+}
+
+.privacy-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.privacy-status {
+  color: var(--color-accent-light);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.privacy-card h2 {
+  margin-top: 8px;
+  color: var(--text-white);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+}
+
+.privacy-message {
+  max-width: 430px;
+  margin: 10px auto 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.privacy-card {
+  text-align: left;
+}
+
+.privacy-card h2 {
+  text-align: center;
+}
+
+.privacy-status {
+  text-align: center;
+  display: block;
+}
+
+.privacy-section-title {
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-light);
+  margin: 20px 0 6px;
+}
+
+.privacy-list {
+  color: var(--text-body);
+  font-size: 0.88rem;
+  line-height: 1.7;
+  padding-left: 20px;
+  margin: 0 0 4px;
+}
+
+.privacy-list li {
+  margin-bottom: 6px;
+}
+
+.privacy-list strong {
+  color: var(--text-white);
+}

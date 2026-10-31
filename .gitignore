@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+__pycache__/
+*.py[cod]
+demo/
+archive/
+v1 (copy)/
+MADJIC V2.pdf

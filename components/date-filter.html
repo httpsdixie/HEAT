@@ -1,0 +1,47 @@
+<template id="orchid-date-filter-template">
+  <div class="orchid-date-filter" role="group" aria-label="Filter sensor data by date range">
+    <button class="odf-reset" type="button" aria-label="Reset date range" title="Reset date range">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+    </button>
+    <div class="odf-date-field">
+      <span class="odf-field-label">Date range</span>
+      <button class="odf-date-trigger" type="button" aria-haspopup="dialog" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="16" rx="2"/>
+          <path d="M16 3v4M8 3v4M3 10h18"/>
+        </svg>
+        <span class="odf-date-label"></span>
+        <svg class="odf-date-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </button>
+      <div class="odf-calendar" role="dialog" aria-label="Choose a date range" hidden>
+        <div class="odf-calendar-header">
+          <button class="odf-calendar-nav odf-calendar-previous" type="button" aria-label="Previous month">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+          <strong class="odf-calendar-month" aria-live="polite"></strong>
+          <button class="odf-calendar-nav odf-calendar-next" type="button" aria-label="Next month">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+        <p class="odf-calendar-instruction" aria-live="polite">Select a start date</p>
+        <div class="odf-calendar-weekdays" aria-hidden="true">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div class="odf-calendar-days" role="group" aria-label="Calendar dates"></div>
+        <div class="odf-calendar-footer">
+          <span>Up to 30 days</span>
+          <button class="odf-calendar-today" type="button">Today</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

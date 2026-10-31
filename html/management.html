@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORCHID | Reports</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='6' fill='%23a6c4ee'/><ellipse cx='24' cy='10' rx='4' ry='7' fill='%235274aa'/><ellipse cx='24' cy='38' rx='4' ry='7' fill='%23364b76'/><ellipse cx='10' cy='24' rx='7' ry='4' fill='%235274aa'/><ellipse cx='38' cy='24' rx='7' ry='4' fill='%23364b76'/></svg>" />
+  <link rel="stylesheet" href="../css/theme.css?v=ormoc-navy-5" />
+  <link rel="stylesheet" href="../css/layout.css?v=profile-settings-3" />
+  <link rel="stylesheet" href="../css/dashboard.css?v=71" />
+  <link rel="stylesheet" href="../css/management.css?v=26" />
+  <script>
+    if (new URLSearchParams(window.location.search).get('embed') === '1') {
+      document.documentElement.classList.add('account-settings-embed');
+    }
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount" class="sidebar-slot"></div>
+    <div class="main-wrapper">
+      <div id="header-mount" class="header-slot"></div>
+      <main class="dashboard-viewport dashboard-viewport--heat-index report-viewport" id="management-page">
+        <section class="section-metrics report-overview" aria-labelledby="report-overview-title" hidden>
+          <div class="section-header" id="report-overview-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="17" rx="2"/>
+              <path d="M8 4V2m8 2V2M7 15l3-3 3 2 4-5M7 18h10"/>
+            </svg>
+            Report Overview
+          </div>
+          <div class="metrics-grid metrics-grid--heat-index report-metrics" aria-label="Report summary">
+            <article class="metric-card" title="The total number of sensor readings recorded in the selected date range.">
+              <div class="metric-icon-wrap accent" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19V5m0 14h16M8 15l3-4 3 2 5-7"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Total Readings</span>
+                <span class="metric-number" id="report-reading-count">—</span>
+                <span class="metric-sub">In selected period</span>
+              </div>
+            </article>
+            <article class="metric-card" title="The average value across all valid sensor readings in the selected date range. All readings are added together and divided by the count.">
+              <div class="metric-icon-wrap cyan" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12h4l3-8 4 16 3-8h4"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Period Average</span>
+                <span class="metric-number" id="report-average">—</span>
+                <span class="metric-sub">Across valid sensor readings</span>
+              </div>
+            </article>
+            <article class="metric-card" title="The single highest value recorded within the selected date range — not an average, just the peak reading at one point in time.">
+              <div class="metric-icon-wrap red" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 19V5M5 12l7-7 7 7"/>
+                  <path d="M4 21h16"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Highest Reading</span>
+                <span class="metric-number" id="report-highest">—</span>
+                <span class="metric-sub" id="report-highest-detail">For selected period</span>
+              </div>
+            </article>
+            <article class="metric-card" title="The number of sensor nodes that submitted at least one valid reading within the selected date range.">
+              <div class="metric-icon-wrap amber" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="8" r="3"/>
+                  <path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5.5a3 3 0 0 1 0 5.8M18 14a5 5 0 0 1 3 4.6V20"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Reporting Nodes</span>
+                <span class="metric-number" id="report-node-count">—</span>
+                <span class="metric-sub">With valid readings</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="hi-explorer-section report-explorer">
+          <div class="hi-tab-control-card report-control-card" id="report-controls">
+            <div class="hi-tab-bar report-tab-bar" role="group" aria-label="Report display">
+              <span class="hi-tab-indicator" aria-hidden="true"></span>
+              <button class="hi-tab active" id="report-tab-chart" type="button" aria-pressed="true" aria-controls="report-panel-chart">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 3v18h18M7 14l4-4 4 3 6-7"/>
+                </svg>
+                Trend
+              </button>
+              <button class="hi-tab" id="report-tab-records" type="button" aria-pressed="false" aria-controls="report-panel-records">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M8 6h13M8 12h13M8 18h13"/>
+                  <path d="M3 6h.01M3 12h.01M3 18h.01"/>
+                </svg>
+                Records
+              </button>
+            </div>
+            <div class="report-filters" aria-label="Report filters">
+              <label class="report-filter-field">
+                <span>Metric</span>
+                <select id="report-metric" aria-label="Choose report metric">
+                  <option value="heat-index">Heat Index</option>
+                  <option value="temperature">Temperature</option>
+                  <option value="humidity">Humidity</option>
+                  <option value="pressure">Pressure</option>
+                </select>
+              </label>
+              <label class="report-filter-field">
+                <span>Quick range</span>
+                <select id="report-date-preset" aria-label="Choose a report date range">
+                  <option value="custom">Selected dates</option>
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="7-days">Last 7 days</option>
+                  <option value="30-days">Last 30 days</option>
+                  <option value="all-data">All data</option>
+                </select>
+              </label>
+              <div id="report-date-filter-mount"></div>
+              <div class="hi-history-export-menu report-export-menu">
+                <button class="hi-history-export report-export-button" id="report-export" type="button" disabled
+                        aria-label="Export report" title="Export report"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="report-export-options">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <path d="m7 10 5 5 5-5M12 15V3"/>
+                  </svg>
+                </button>
+                <div class="hi-history-export-options" id="report-export-options" role="menu" aria-label="Export format" hidden>
+                  <button type="button" role="menuitem" data-report-export-format="csv">Export as CSV</button>
+                  <button type="button" role="menuitem" data-report-export-format="pdf">Export as PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="sensor-data-status report-data-status" id="report-data-status" role="status" hidden></p>
+          <button type="button" class="btn btn-secondary hi-retry-button report-retry-button" id="report-retry" hidden>Retry report</button>
+
+          <section class="hi-tab-panel status-card report-panel" id="report-panel-chart" role="tabpanel" aria-labelledby="report-tab-chart">
+            <div class="report-panel-heading">
+              <div>
+                <h2 class="status-card-title" id="report-chart-title">Heat Index Trend</h2>
+                <p class="report-panel-subtitle" id="report-chart-subtitle">Hourly average across reporting sensors</p>
+              </div>
+              <span class="hi-live-note" id="report-chart-note">Loading report data…</span>
+            </div>
+            <div class="report-chart-area" id="report-chart-area" role="img" aria-label="Hourly average sensor readings chart">
+              <p class="hi-trend-empty" id="report-chart-empty">Loading report data…</p>
+            </div>
+          </section>
+
+          <section class="hi-tab-panel status-card report-panel report-records-panel data-table-panel" id="report-panel-records" role="tabpanel" aria-labelledby="report-tab-records" hidden>
+            <div class="hi-table-heading">
+              <div>
+                <h2 class="status-card-title" id="report-table-title">Heat Index Data Records</h2>
+                <p id="report-table-subtitle">Sensor readings in the selected date range.</p>
+              </div>
+              <label class="hi-history-search report-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="m20 20-4-4"></path>
+                </svg>
+                <input id="report-search" type="search" placeholder="Search records..." aria-label="Search report records">
+              </label>
+            </div>
+            <div class="hi-table-scroll report-table-scroll">
+              <table class="hi-node-table report-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Node ID</th>
+                    <th scope="col">Station / Location</th>
+                    <th scope="col" id="report-value-heading">Heat Index (°C)</th>
+                    <th scope="col" class="report-extra-col">Temperature (°C)</th>
+                    <th scope="col" class="report-extra-col">Humidity (%)</th>
+                    <th scope="col" id="report-band-heading">Risk Level</th>
+                  </tr>
+                </thead>
+                <tbody id="report-table-body">
+                  <tr><td class="hi-table-empty" colspan="7">Loading report data…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="report-pagination"></div>
+          </section>
+        </section>
+        <section class="management-audit-view" id="management-audit-view" aria-label="Audit Trail" hidden>
+          <div class="hi-tab-control-card management-audit-controls-card">
+            <div class="management-audit-controls">
+              <label class="hi-history-search report-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="m20 20-4-4"></path>
+                </svg>
+                <input id="audit-search" type="search" placeholder="Search events..." aria-label="Search audit events">
+              </label>
+              <div class="management-audit-filter-group">
+                <label class="report-filter-field">
+                  <span>Action</span>
+                  <select id="audit-action" aria-label="Filter audit actions">
+                    <option value="all">All actions</option>
+                    <option value="placement_added">Placement added</option>
+                    <option value="placement_updated">Placement updated</option>
+                    <option value="placement_removed">Placement removed</option>
+                    <option value="session_login">Signed in</option>
+                    <option value="session_logout">Signed out</option>
+                    <option value="account_created">Account created</option>
+                    <option value="account_profile_updated">Profile updated</option>
+                    <option value="account_email_updated">Email changed</option>
+                    <option value="account_password_updated">Password changed</option>
+                  </select>
+                </label>
+                <div id="audit-date-filter-mount"></div>
+              </div>
+            </div>
+          </div>
+          <section class="status-card management-audit-panel data-table-panel" id="management-audit-panel" aria-label="Audit Trail events">
+            <div class="hi-table-heading">
+              <div>
+                <h2 class="status-card-title">Audit Trail Logs</h2>
+                <p id="audit-date-range-label">Showing audit events from the selected date range.</p>
+              </div>
+            </div>
+            <p class="sensor-data-status report-data-status" id="audit-status" role="status" hidden></p>
+            <div class="hi-table-scroll management-audit-table-scroll">
+              <table class="hi-node-table management-audit-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Time</th>
+                    <th scope="col">Actor</th>
+                    <th scope="col">Action</th>
+                    <th scope="col">Node</th>
+                    <th scope="col">Details</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-table-body">
+                  <tr><td class="hi-table-empty" colspan="5">Loading audit events…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="audit-pagination"></div>
+          </section>
+        </section>
+        <section class="status-card account-settings-panel" id="account-settings-panel" aria-labelledby="account-settings-title" hidden>
+          <header class="management-audit-heading">
+            <div>
+              <h1 class="status-card-title" id="account-settings-title">Account &amp; Security</h1>
+              <p class="report-panel-subtitle">A shared administrator password protects this trusted local installation. Email changes are verified by code.</p>
+            </div>
+          </header>
+          <p class="account-settings-status" id="account-settings-status" role="status" aria-live="polite"></p>
+          <div class="account-settings-grid">
+            <section class="account-settings-card" aria-labelledby="account-profile-title">
+              <div>
+                <h2 id="account-profile-title">Profile</h2>
+                <p>Update the name shown in the administrator menu.</p>
+              </div>
+              <form class="account-settings-form" id="account-profile-form">
+                <label>Administrator name
+                  <input id="account-display-name" name="display_name" type="text" maxlength="80" required />
+                </label>
+                <label>Verified email
+                  <input id="account-current-email" type="email" readonly />
+                </label>
+                <button class="btn btn-primary" type="submit">Save profile</button>
+              </form>
+            </section>
+            <section class="account-settings-card" aria-labelledby="account-email-title">
+              <div>
+                <h2 id="account-email-title">Change email</h2>
+                <p>Verification codes are sent to both your current and new addresses.</p>
+              </div>
+              <form class="account-settings-form" id="account-email-form">
+                <label>New email
+                  <input id="account-new-email" type="email" autocomplete="email" maxlength="254" required />
+                </label>
+                <button class="btn btn-secondary" type="submit">Send verification codes</button>
+              </form>
+              <form class="account-settings-form account-verification-form" id="account-email-verify-form" hidden>
+                <label>Code sent to current email
+                  <input id="account-current-email-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+                </label>
+                <label>Code sent to new email
+                  <input id="account-new-email-code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required />
+                </label>
+                <button class="btn btn-primary" type="submit">Verify and change email</button>
+              </form>
+            </section>
+            <section class="account-settings-card" aria-labelledby="account-password-title">
+              <div>
+                <h2 id="account-password-title">Change password</h2>
+                <p>A verification code will be sent to your current account email.</p>
+              </div>
+              <form class="account-settings-form" id="account-password-form">
+                <button class="btn btn-secondary" type="submit">Send verification code</button>
+              </form>
+              <form class="account-settings-form account-verification-form" id="account-password-code-form" hidden>
+                <label>Six-digit verification code
+                  <input id="account-password-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+                </label>
+                <button class="btn btn-secondary" type="submit">Verify code</button>
+              </form>
+              <form class="account-settings-form account-verification-form" id="account-password-verify-form" hidden>
+                <label>New password
+                  <input id="account-new-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                </label>
+                <label>Confirm new password
+                  <input id="account-new-password-confirm" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                </label>
+                <button class="btn btn-primary" type="submit">Change password</button>
+              </form>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div id="toast-mount"></div>
+  <div id="modal-mount"></div>
+  <script src="../components/components.js?v=58"></script>
+  <script src="../js/management.js?v=20"></script>
+</body>
+</html>

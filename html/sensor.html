@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORCHID | Sensor</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='6' fill='%23a6c4ee'/><ellipse cx='24' cy='10' rx='4' ry='7' fill='%235274aa'/><ellipse cx='24' cy='38' rx='4' ry='7' fill='%23364b76'/><ellipse cx='10' cy='24' rx='7' ry='4' fill='%235274aa'/><ellipse cx='38' cy='24' rx='7' ry='4' fill='%23364b76'/></svg>" />
+  <link rel="stylesheet" href="../css/theme.css?v=ormoc-navy-5" />
+  <link rel="stylesheet" href="../css/layout.css?v=profile-settings-3" />
+  <link rel="stylesheet" href="../css/dashboard.css?v=70" />
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount" class="sidebar-slot"></div>
+    <div class="main-wrapper">
+      <div id="header-mount" class="header-slot"></div>
+
+      <main class="dashboard-viewport">
+        <!-- ── SECTION 1: METRICS ── -->
+        <section class="section-metrics">
+          <div class="section-header">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            </svg>
+            Sensor Device Overview
+          </div>
+          <!-- Device group: Total Nodes + Deployed are visually connected -->
+          <div class="metrics-grid metrics-grid--sensor">
+
+            <!-- Card 1: Total registered in system -->
+            <div class="metric-card metric-card--fleet-group" tabindex="0">
+              <div class="metric-icon-wrap accent">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="7" y="7" width="10" height="10" rx="1.5"/>
+                  <path d="M7 9H4M7 12H4M7 15H4M17 9h3M17 12h3M17 15h3M9 7V4M12 7V4M15 7V4M9 17v3M12 17v3M15 17v3"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Total Nodes</span>
+                <div class="metric-value-row">
+                  <span class="metric-number" id="sn-total" data-fleet-total="0">0</span>
+                  <span class="metric-status-badge status-deployed">Device</span>
+                </div>
+                <span class="metric-sub">Registered in Device</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Deployed on map (subset of total) -->
+            <div class="metric-card metric-card--fleet-group metric-card--deployed" tabindex="0">
+              <div class="metric-fleet-connector" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                  <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+              </div>
+              <div class="metric-icon-wrap green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Deployed</span>
+                <div class="metric-value-row">
+                  <span class="metric-number" id="sn-deployed">0</span>
+                  <span class="metric-status-badge status-online">On Map</span>
+                </div>
+                <span class="metric-sub">Placed on GIS map</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Working / online -->
+            <div class="metric-card" tabindex="0">
+              <div class="metric-icon-wrap cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/>
+                  <path d="M8 21h8M12 17v4"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Working Nodes</span>
+                <div class="metric-value-row">
+                  <span class="metric-number" id="sn-working">0</span>
+                  <span class="metric-status-badge status-online">Online</span>
+                </div>
+                <span class="metric-sub">Actively transmitting data</span>
+              </div>
+            </div>
+
+            <!-- Card 4: Not working / offline -->
+            <div class="metric-card" tabindex="0">
+              <div class="metric-icon-wrap red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-label">Inactive Nodes</span>
+                <div class="metric-value-row">
+                  <span class="metric-number" id="sn-not-working">0</span>
+                  <span class="metric-status-badge status-offline">Offline</span>
+                </div>
+                <span class="metric-sub">Not transmitting data</span>
+              </div>
+            </div>
+
+          </div>
+          <p class="sensor-data-status" id="sensor-data-status" role="status" hidden>Connecting to the sensor database…</p>
+
+          <!-- ── CONTROL BAR ── -->
+          <div class="sensor-subsection-block">
+            <div class="section-header section-header--tight">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+              </svg>
+              Target Node
+            </div>
+            <div class="sensor-control-bar" aria-label="Sensor view controls">
+              <div class="sensor-control-tabs" role="group" aria-label="Sensor view">
+                <span class="sensor-control-indicator" aria-hidden="true"></span>
+                <button class="sensor-control-tab" type="button" id="tab-sensors" aria-pressed="false" aria-controls="sensor-list-view">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="16" rx="2"/>
+                    <path d="M8 8h8M8 12h8M8 16h5"/>
+                  </svg>
+                  All Sensors
+                </button>
+                <button class="sensor-control-tab active" type="button" id="tab-main" aria-pressed="true" aria-controls="sensor-overview-view">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M8 7h12M8 12h12M8 17h12"/>
+                    <path d="M3 7h.01M3 12h.01M3 17h.01"/>
+                  </svg>
+                  Sensor Overview
+                </button>
+                <button class="sensor-control-tab" type="button" id="tab-activity" aria-pressed="false" aria-controls="sensor-activity-view">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 12h4l3-8 4 16 3-8h4"/>
+                  </svg>
+                  Activity
+                </button>
+              </div>
+
+              <div class="sensor-inspector-group">
+                <div id="sensor-node-search-mount"></div>
+                <div class="sensor-list-tools" aria-label="Sensor device tools">
+                  <label class="sensor-filter-control">
+                    <span class="sensor-filter-label">Status</span>
+                    <select id="sensor-status-filter" class="sensor-select" aria-label="Filter sensors by status"
+                            data-dropdown data-dropdown-class="sensor-filter-dropdown">
+                    <option value="All">All sensors</option>
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Unplaced">Unplaced</option>
+                    </select>
+                  </label>
+                  <div class="sensor-export-menu">
+                    <button id="sensor-export-button" class="sensor-tool-button" type="button"
+                            aria-haspopup="menu" aria-expanded="false" aria-controls="sensor-export-options">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <path d="m7 10 5 5 5-5M12 15V3"/>
+                      </svg>
+                      Export
+                    </button>
+                    <div id="sensor-export-options" class="sensor-export-options" role="menu" aria-label="Export format" hidden>
+                      <button type="button" role="menuitem" data-export-format="csv">Export as CSV</button>
+                      <button type="button" role="menuitem" data-export-format="pdf">Export as PDF</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── SECTION 2: NODE INSPECTOR ── -->
+        <section class="section-telemetry" id="sensor-overview-view">
+          <div class="sensor-shell-grid">
+
+            <!-- Full-width node detail card -->
+            <div class="status-card sensor-card-main" tabindex="0">
+
+              <!-- Node identity header -->
+              <div class="sn-node-header">
+                <div class="sn-node-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="7" y="7" width="10" height="10" rx="1.5"/>
+                    <path d="M7 9H4M7 12H4M7 15H4M17 9h3M17 12h3M17 15h3M9 7V4M12 7V4M15 7V4M9 17v3M12 17v3M15 17v3"/>
+                  </svg>
+                </div>
+                <div class="sn-node-identity">
+                  <div class="sn-node-badges">
+                    <span class="sn-badge sn-badge--id" id="sn-node-id-badge">—</span>
+                    <span class="sn-badge" id="sn-status-badge">No Data</span>
+                  </div>
+                  <h2 class="sn-node-name" id="sn-node-name">No sensor data available</h2>
+                  <div class="sn-node-location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" aria-hidden="true">
+                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span id="sn-node-location">Waiting for sensor data.</span>
+                  </div>
+                </div>
+                <div class="sn-last-seen">
+                  <span class="sn-last-seen-heading">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span class="sn-last-seen-label">Last Reported</span>
+                  </span>
+                  <strong class="sn-last-seen-val" id="sn-last-seen">—</strong>
+                </div>
+              </div>
+
+              <!-- Subheading: Health & Weather -->
+              <div class="sn-section-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+                Health &amp; Weather Context
+              </div>
+
+              <div class="sn-health-grid">
+                <div class="sn-health-item sn-health-item--battery analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="BATTERY"
+                     data-tip-description="The remaining charge in the node's onboard battery. Nodes are primarily solar-powered — the battery acts as a buffer during low-light or nighttime periods."
+                     data-tip-points="Critical (below 20%): Node may go offline soon · charge or inspect|Low (20–49%): Running on battery power, monitor closely|Good (50–79%): Normal battery operation|Full (80–100%): Solar charging active or fully topped up"
+                     data-tip-reading="Charge is estimated from a typical single-cell 3.7 V Li-ion voltage curve. Load, charging, temperature, and cell age affect voltage, so treat this as an approximate indicator, not a calibrated charge measurement.">
+                  <span class="sn-health-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" aria-hidden="true">
+                      <rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/>
+                    </svg>
+                    Battery
+                  </span>
+                  <span class="sn-battery-pct" id="sn-battery">—</span>
+                  <span class="sn-battery-status-text" id="sn-battery-sub">Estimated from voltage</span>
+                  <div class="sn-battery-bar" role="progressbar" aria-label="Estimated battery charge" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Battery level unavailable">
+                    <div class="sn-battery-fill" id="sn-battery-fill" style="width: 0%"></div>
+                  </div>
+                </div>
+                <div class="sn-health-item analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="UP TIME"
+                     data-tip-description="Approximate time since this node started running, based on the time reported by the sensor."
+                     data-tip-points="This value is an estimate|It may reset when the node restarts"
+                     data-tip-reading="Use this as a guide, not an exact runtime.">
+                  <span class="sn-health-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" aria-hidden="true"><path d="M12 2v10m0 0a4 4 0 1 0 4 4"/></svg>
+                    Up Time
+                  </span>
+                  <strong class="sn-health-value" id="sn-uptime">No data</strong>
+                  <span class="sn-health-sub" id="sn-uptime-sub">Waiting for sensor data</span>
+                </div>
+                <div class="sn-health-item analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="SENSOR STATUS"
+                     data-tip-description="A simple summary of the sensor's reported condition."
+                     data-tip-points="Normal: sensor is operating normally|Battery warning: sensor is operating but its battery is low|Other values are shown as unrecognized"
+                     data-tip-reading="Battery charge is also shown separately in the Battery card.">
+                  <span class="sn-health-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                    Sensor Status
+                  </span>
+                  <strong class="sn-health-value" id="sn-sensor-status">No data</strong>
+                  <span class="sn-health-sub" id="sn-sensor-status-sub">Status unavailable</span>
+                </div>
+                <div class="sn-health-item analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="CURRENT WEATHER"
+                     data-tip-description="The observed sky and weather condition at this node's location, derived from sensor data and local atmospheric readings."
+                     data-tip-points="Clear Sky: No significant cloud cover and strong solar exposure|Partly Cloudy: A mix of sun and clouds|Cloudy / Overcast: Extensive cloud cover and reduced solar charging|Rain: Wet conditions with rainfall|Stormy: Extreme weather — follow official advisories and seek shelter"
+                     data-tip-reading="Weather conditions directly affect heat index severity and solar battery charging. Prolonged cloud cover may reduce node battery levels.">
+                  <span class="sn-health-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                    Current Weather
+                  </span>
+                  <strong class="sn-health-value" id="sn-weather">No data</strong>
+                  <span class="sn-health-sub">Reported condition</span>
+                </div>
+                <div class="sn-health-item analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="FORECAST"
+                     data-tip-description="A rough rain-potential trend based on changes between recent humidity and pressure readings. This is not a calibrated weather forecast."
+                     data-tip-points="Rain potential rising: humidity increased at least 5 percentage points while pressure fell at least 1 hPa|Rain potential easing: humidity fell at least 5 percentage points while pressure rose at least 1 hPa|Conditions stable: both readings changed less than those thresholds|Mixed signals: humidity and pressure trends do not agree"
+                     data-tip-reading="The estimate requires two readings at least 15 minutes apart, with the latest within 15 minutes.">
+                  <span class="sn-health-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" aria-hidden="true"><path d="M2 12h5m15 0h-5M12 2v5m0 15v-5M4.9 4.9l3.5 3.5m7.2 7.2 3.5 3.5M4.9 19.1l3.5-3.5m7.2-7.2 3.5-3.5"/></svg>
+                    Forecast
+                  </span>
+                  <strong class="sn-health-value" id="sn-forecast">Unavailable</strong>
+                  <span class="sn-health-sub" id="sn-forecast-sub">Needs recent humidity and pressure readings</span>
+                </div>
+              </div>
+
+              <!-- Subheading: Telemetry -->
+              <div class="sn-section-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Latest Recorded Telemetry
+              </div>
+
+              <div class="sn-telemetry-grid">
+                <div class="sn-telemetry-card sn-telemetry-card--temp analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="TEMPERATURE"
+                     data-tip-description="The ambient air temperature measured directly at the node's location, in degrees Celsius."
+                     data-tip-points="Cool: below 24°C — comfortable outdoor conditions|Warm: 24–32°C — moderate heat exposure|Hot: 32–38°C — limit prolonged outdoor activity|Extreme: above 38°C — high health risk, avoid exposure"
+                     data-tip-reading="Temperature alone does not capture how hot it feels. Cross-reference with the Heat Index for a more accurate risk assessment.">
+                  <div class="sn-telemetry-icon-wrap red">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                    </svg>
+                  </div>
+                  <div class="sn-telemetry-body">
+                    <span class="sn-telemetry-label">Temperature</span>
+                    <strong class="sn-telemetry-value" id="sn-temp">—</strong>
+                    <span class="sn-telemetry-sub">Ambient Air Temp</span>
+                  </div>
+                </div>
+                <div class="sn-telemetry-card sn-telemetry-card--humidity analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="HUMIDITY"
+                     data-tip-description="The amount of water vapor in the air as a percentage of the maximum it can hold at the current temperature."
+                     data-tip-points="Dry: below 40% — low moisture, possible dehydration risk|Comfortable: 40–60% — optimal range for most people|Humid: 60–80% — noticeable stickiness, elevated heat stress|Very Humid: above 80% — high heat index amplification, monitor closely"
+                     data-tip-reading="High humidity prevents effective sweating, making the body feel hotter than the actual temperature. It is the key driver of a high heat index.">
+                  <div class="sn-telemetry-icon-wrap cyan">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    </svg>
+                  </div>
+                  <div class="sn-telemetry-body">
+                    <span class="sn-telemetry-label">Humidity</span>
+                    <strong class="sn-telemetry-value" id="sn-humidity">—</strong>
+                    <span class="sn-telemetry-sub">Relative Humidity</span>
+                  </div>
+                </div>
+                <div class="sn-telemetry-card sn-telemetry-card--pressure analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="PRESSURE"
+                     data-tip-description="Atmospheric pressure measured in hectopascals (hPa) — the weight of the air column above the sensor."
+                     data-tip-points="Low: below 1000 hPa — possible storm or rain system approaching|Normal: 1000–1020 hPa — stable conditions|High: above 1020 hPa — fair weather, clear skies likely"
+                     data-tip-reading="A rapid drop in pressure often precedes heavy rain or thunderstorms. A rising trend generally indicates improving conditions.">
+                  <div class="sn-telemetry-icon-wrap accent">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M8 12h8M12 8v8"/>
+                    </svg>
+                  </div>
+                  <div class="sn-telemetry-body">
+                    <span class="sn-telemetry-label">Pressure</span>
+                    <strong class="sn-telemetry-value" id="sn-pressure">—</strong>
+                    <span class="sn-telemetry-sub">Barometric Pressure</span>
+                  </div>
+                </div>
+                <div class="sn-telemetry-card sn-telemetry-card--heat analytics-interactive-card"
+                     tabindex="0"
+                     data-tip-title="HEAT INDEX"
+                     data-tip-description="How hot the air actually feels when temperature and humidity are combined — more relevant to health risk than temperature alone."
+                     data-tip-points="Caution (27–32°C): Fatigue possible with prolonged exposure|Extreme Caution (32–41°C): Heat cramps and exhaustion possible|Danger (41–54°C): Heat exhaustion likely, heat stroke possible|Extreme Danger (above 54°C): Heat stroke imminent"
+                     data-tip-reading="This is the primary indicator used by ORCHID for public health advisories. Always act on Heat Index — not temperature alone.">
+                  <div class="sn-telemetry-icon-wrap amber">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="5"/>
+                      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                  </div>
+                  <div class="sn-telemetry-body">
+                    <span class="sn-telemetry-label">Heat Index</span>
+                    <strong class="sn-telemetry-value" id="sn-heat-index">—</strong>
+                    <span class="sn-telemetry-sub" id="sn-heat-level">—</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <section class="section-telemetry sensor-list-view" id="sensor-list-view" aria-label="All sensors" hidden>
+          <div class="status-card sensor-list-card">
+            <div class="sensor-list-heading">
+              <div>
+                <h2 class="sn-node-name">Sensors Device Registry (All)</h2>
+                <p class="sensor-list-summary" id="sensor-list-summary">Click any row to inspect specific telemetry in detail</p>
+              </div>
+              <span class="sensor-list-count" id="sensor-list-count"></span>
+            </div>
+            <div class="sensor-table-wrap" role="region" aria-label="All sensors table" tabindex="0">
+              <table class="sensor-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Node ID</th>
+                    <th scope="col">Node Name</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Last Reported</th>
+                    <th scope="col">Battery</th>
+                    <th scope="col">Up Time</th>
+                    <th scope="col">Sensor Status</th>
+                  </tr>
+                </thead>
+                <tbody id="sensor-list-body"></tbody>
+              </table>
+            </div>
+            <div id="sensor-list-pagination"></div>
+          </div>
+        </section>
+
+        <section class="section-telemetry sensor-activity-view" id="sensor-activity-view" aria-label="Sensor activity" hidden>
+          <div class="status-card sensor-list-card">
+            <div class="sensor-list-heading">
+              <div>
+                <h2 class="sn-node-name">Recent Sensor Activity</h2>
+                <p class="sensor-list-summary">Recent data sent by nodes, with times shown in PHT.</p>
+              </div>
+              <span class="sensor-list-count" id="sensor-activity-count"></span>
+            </div>
+            <div class="sensor-table-wrap">
+              <table class="sensor-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Node ID</th>
+                    <th scope="col">Node Name</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Data sent (Time)</th>
+                  </tr>
+                </thead>
+                <tbody id="sensor-activity-body"></tbody>
+              </table>
+            </div>
+            <div class="sensor-activity-pagination" id="sensor-activity-pagination"></div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-mount"></div>
+  <div id="modal-mount"></div>
+
+  <style>
+    /* ── 4-col sensor metrics grid ── */
+    .metrics-grid--sensor {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Fleet group: Total + Deployed share a subtle connected look */
+    .metric-card--fleet-group {
+      border-color: rgba(var(--color-accent-rgb), 0.45);
+    }
+
+    .metric-card--deployed {
+      position: relative;
+      border-color: rgba(34, 197, 94, 0.35);
+      background: rgba(34, 197, 94, 0.04);
+    }
+
+    /* Arrow connector between Total and Deployed */
+    .metric-fleet-connector {
+      position: absolute;
+      left: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background: var(--bg-card);
+      border: 1px solid rgba(var(--color-accent-rgb), 0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      z-index: 1;
+    }
+
+    /* Green icon wrap (missing from global CSS) */
+    .metric-icon-wrap.green {
+      background: var(--bg-icon-green);
+      color: var(--color-green);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    /* ── Control bar ── */
+    .sensor-subsection-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 2px;
+    }
+
+    .sensor-data-status {
+      margin: 8px 0 0;
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+    }
+
+    .sensor-data-status[data-state="error"] {
+      color: #fca5a5;
+    }
+
+    .section-header--tight {
+      margin-bottom: 6px;
+    }
+
+    .sensor-control-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      padding: 4px 8px;
+      margin-top: 0;
+    }
+
+    .sensor-control-tabs {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: min(100%, 510px);
+      padding: 3px;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      isolation: isolate;
+    }
+
+    .sensor-control-indicator {
+      position: absolute;
+      z-index: -1;
+      inset: 3px auto 3px 3px;
+      width: calc((100% - 6px) / 3);
+      border: 1px solid var(--border-accent-bright);
+      border-radius: calc(var(--radius-md) - 3px);
+      background: var(--bg-pill-hover);
+      box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.16);
+      transition: transform 0.22s ease;
+    }
+
+    .sensor-control-tabs.show-overview .sensor-control-indicator {
+      transform: translateX(100%);
+    }
+
+    .sensor-control-tabs.show-activity .sensor-control-indicator {
+      transform: translateX(200%);
+    }
+
+    .sensor-control-tab {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex: 1 1 33.333%;
+      min-width: 0;
+      border: 1px solid transparent;
+      border-radius: calc(var(--radius-md) - 3px);
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      font-size: var(--font-size-xs);
+      padding: 5px 14px;
+      min-height: 32px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .sensor-control-tab:hover,
+    .sensor-control-tab.active {
+      color: var(--text-white);
+    }
+
+    .sensor-control-tab svg { width: 14px; height: 14px; }
+
+    .sensor-inspector-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+
+    .sensor-inspector-group > .orchid-node-search {
+      flex: 0 1 280px;
+      width: 100%;
+      max-width: 280px;
+      min-width: 0;
+    }
+
+    .sensor-list-tools {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sensor-control-tabs.show-all-sensors + .sensor-inspector-group .sensor-list-tools {
+      display: flex;
+    }
+
+    .sensor-control-tabs.show-activity + .sensor-inspector-group {
+      display: none;
+    }
+
+    .sensor-list-tools .sensor-select {
+      min-height: 36px;
+    }
+
+    .sensor-filter-control {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 36px;
+      padding: 0 9px;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+    }
+
+    .sensor-filter-label {
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sensor-filter-control .sensor-select {
+      width: auto;
+      min-width: 96px;
+      min-height: 32px;
+      padding: 4px 24px 4px 6px;
+      border: 0;
+      background-color: transparent;
+      background-position: calc(100% - 10px) calc(50% - 2px), calc(100% - 5px) calc(50% - 2px);
+      color: var(--text-white);
+    }
+
+    .sensor-filter-dropdown {
+      flex: 0 0 auto;
+      width: 112px;
+    }
+
+    .sensor-filter-dropdown .orchid-dropdown-trigger {
+      min-height: 32px;
+      padding: 4px 7px;
+      border-color: transparent;
+      background: transparent;
+      font-size: var(--font-size-xs);
+    }
+
+    .sensor-filter-dropdown .orchid-dropdown-menu {
+      right: 0;
+      left: auto;
+      min-width: 150px;
+    }
+
+    .sensor-export-menu {
+      position: relative;
+    }
+
+    .sensor-tool-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 36px;
+      padding: 6px 12px;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      color: var(--text-white);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+      white-space: nowrap;
+      min-width: 90px;
+      cursor: pointer;
+    }
+
+    .sensor-export-options {
+      position: absolute;
+      z-index: 1300;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 160px;
+      padding: 5px;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      box-shadow: var(--shadow-card);
+    }
+
+    .sensor-export-options[hidden] {
+      display: none;
+    }
+
+    .sensor-export-options button {
+      display: block;
+      width: 100%;
+      padding: 9px 10px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-white);
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .sensor-export-options button:hover,
+    .sensor-export-options button:focus-visible {
+      background: var(--bg-hover);
+      outline: none;
+    }
+
+    .sensor-tool-button:hover {
+      border-color: var(--border-accent-bright);
+      background: var(--bg-hover);
+    }
+
+    .sensor-tool-button svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .sensor-select {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(var(--color-accent-rgb), 0.35);
+      border-radius: var(--radius-md);
+      color: var(--text-white);
+      font-size: var(--font-size-sm);
+      padding: 4px 34px 4px 12px;
+      min-height: 32px;
+      cursor: pointer;
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+                        linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+      background-position: calc(100% - 14px) calc(50% - 2px), calc(100% - 9px) calc(50% - 2px);
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      transition: border-color 0.2s;
+    }
+
+    .sensor-select-dropdown { width: min(100%, 250px); }
+
+    #sensor-overview-view[hidden],
+    .sensor-list-view[hidden],
+    .sensor-activity-view[hidden] { display: none; }
+
+    .sensor-list-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1 1 0;
+      min-height: 0;
+      justify-content: flex-start;
+      overflow: hidden;
+    }
+
+    .sensor-list-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .sensor-list-heading .sn-node-name {
+      font-size: var(--font-size-lg);
+    }
+
+    .sensor-list-summary {
+      margin-top: 4px;
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .sensor-list-view .sensor-list-summary {
+      font-size: var(--font-size-base);
+    }
+
+    .sensor-activity-view .sensor-list-summary {
+      font-size: var(--font-size-base);
+    }
+
+    .sensor-list-count {
+      flex-shrink: 0;
+      padding: 6px 10px;
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-pill);
+      color: var(--text-secondary);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .sensor-list-view .sensor-list-count {
+      font-size: var(--font-size-base);
+    }
+
+    .sensor-activity-view .sensor-list-count {
+      font-size: var(--font-size-base);
+    }
+
+    .sensor-activity-row {
+      transition: background 0.12s;
+    }
+
+    .sensor-activity-row:hover {
+      background: rgba(var(--color-accent-rgb), 0.07);
+    }
+
+    .sensor-activity-node-id {
+      color: var(--color-accent-light);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.05em;
+    }
+
+    .sensor-activity-view .sensor-activity-node-id {
+      font-size: inherit;
+    }
+
+    .sensor-activity-location {
+      color: var(--text-white);
+      font-weight: var(--font-weight-medium);
+    }
+
+    .sensor-activity-time {
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sensor-table-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      min-width: 0;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-color: var(--border-accent-bright) transparent;
+      scrollbar-width: thin;
+    }
+
+    .sensor-table-wrap--partial {
+      flex: 0 0 auto;
+    }
+
+    .sensor-list-view .sensor-table {
+      min-width: 920px;
+    }
+
+    #sensor-list-pagination {
+      flex-shrink: 0;
+      margin-top: auto;
+    }
+
+    .sensor-activity-pagination {
+      margin-top: 0;
+    }
+
+    .sensor-activity-pagination .orchid-pagination {
+      padding-top: 0;
+    }
+
+    .dashboard-viewport--sensor-table-view {
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-color: var(--border-accent-bright) transparent;
+      scrollbar-width: thin;
+    }
+
+    .dashboard-viewport--sensor-table-view > .section-metrics {
+      flex: 0 0 auto;
+    }
+
+    .dashboard-viewport--sensor-table-view > .section-telemetry {
+      flex: 1 0 360px;
+      min-height: 360px;
+    }
+
+    .dashboard-viewport--sensor-table-view > .section-telemetry.sensor-activity-view {
+      flex: 0 0 auto;
+      min-height: 0;
+    }
+
+    .sensor-activity-view .sensor-list-card {
+      flex: 0 0 auto;
+      height: auto;
+      min-height: 0;
+      gap: 12px;
+    }
+
+    .sensor-activity-view .sensor-table-wrap {
+      align-self: stretch;
+      flex: 0 0 auto;
+      width: auto;
+    }
+
+    .sensor-activity-view .sensor-table {
+      width: 100%;
+      table-layout: auto;
+    }
+
+    .sensor-activity-view .sensor-table th,
+    .sensor-activity-view .sensor-table td {
+      padding: 7px 14px;
+    }
+
+    .sensor-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .sensor-table-wrap::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .sensor-table-wrap::-webkit-scrollbar-thumb {
+      border: 2px solid transparent;
+      border-radius: var(--radius-pill);
+      background: var(--border-accent-bright);
+      background-clip: padding-box;
+    }
+
+    .sensor-table th,
+    .sensor-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-soft);
+      white-space: nowrap;
+      font-size: var(--font-size-sm);
+      vertical-align: middle;
+    }
+
+    .sensor-table th {
+      position: sticky;
+      top: 0;
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .sensor-list-view .sensor-table th {
+      font-size: 1rem;
+    }
+
+    .sensor-activity-view .sensor-table th {
+      font-size: var(--font-size-xs);
+    }
+
+    .sensor-list-view .sensor-table td {
+      font-size: var(--font-size-md);
+    }
+
+    .sensor-activity-view .sensor-table td {
+      font-size: var(--font-size-md);
+    }
+
+    .sensor-table tbody tr:last-child td { border-bottom: 0; }
+
+    /* Clickable rows */
+    .sensor-table-row {
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .sensor-table-row:hover { background: var(--bg-hover); }
+    .sensor-table-row--selected {
+      background: rgba(var(--color-accent-rgb), 0.14);
+      box-shadow: inset 3px 0 var(--color-accent-light);
+    }
+    .sensor-table-row:focus {
+      outline: 2px solid var(--color-accent-light);
+      outline-offset: -2px;
+      background: var(--bg-hover);
+    }
+
+    /* Column styles */
+    .sensor-table-node-id {
+      color: var(--color-accent-light);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.05em;
+      font-size: var(--font-size-xs);
+    }
+
+    .sensor-list-view .sensor-table-node-id {
+      font-size: inherit;
+    }
+
+    .sensor-table-node-name {
+      color: var(--text-white);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .sensor-table-muted { color: var(--text-muted); }
+
+    .sensor-table-seen {
+      vertical-align: middle;
+    }
+
+    /* Status badge pill */
+    .sensor-table-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .sensor-table-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    .sensor-table-status-badge--online {
+      color: var(--color-green);
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .sensor-table-status-badge--offline {
+      color: var(--color-red);
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .sensor-table-status-badge--unplaced {
+      color: var(--color-yellow);
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    /* Sensor status column */
+    .sensor-table-sensor-status--ok  { color: var(--color-green); font-weight: var(--font-weight-semibold); }
+    .sensor-table-sensor-status--err { color: var(--color-red);   font-weight: var(--font-weight-semibold); }
+
+    /* Empty state */
+    .sensor-table-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    .sensor-select:focus {
+      outline: 2px solid var(--color-accent-light);
+      outline-offset: 2px;
+      border-color: var(--border-accent-bright);
+    }
+
+    /* ── Shell grid — single column, full width ── */
+    .sensor-shell-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .sensor-card-main {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(var(--color-accent-rgb), 0.3) transparent;
+    }
+
+    /* ── Node header ── */
+    .sn-node-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .sn-node-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--bg-icon-accent);
+      border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--color-accent-light);
+    }
+
+    .sn-node-icon svg { width: 22px; height: 22px; }
+
+    .sn-node-identity {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sn-node-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+
+    .sn-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 0.65rem;
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .sn-badge--id {
+      background: rgba(var(--color-accent-rgb), 0.15);
+      color: var(--color-accent-light);
+      border: 1px solid rgba(var(--color-accent-rgb), 0.4);
+    }
+
+    .sn-badge--online {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--color-green);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .sn-badge--offline {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--color-red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .sn-node-name {
+      color: var(--text-white);
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .sn-node-location {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+      margin-top: 4px;
+    }
+
+    .sn-last-seen {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .sn-last-seen-heading {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sn-last-seen-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-weight: var(--font-weight-bold);
+    }
+
+    .sn-last-seen-val {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    /* ── Section subheadings ── */
+    .sn-section-heading {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin: 8px 0 6px;
+    }
+
+    .sn-section-heading svg {
+      color: var(--color-accent-light);
+      flex-shrink: 0;
+    }
+
+    /* ── Health grid ── */
+    .sn-health-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+
+    .sn-health-item {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      min-height: 84px;
+      justify-content: space-between;
+    }
+
+    .sn-health-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-weight: var(--font-weight-bold);
+      color: var(--text-muted);
+    }
+
+    .sn-health-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sn-health-value {
+      color: var(--text-white);
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-bold);
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .sn-health-value-inline {
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .sn-health-sub {
+      color: var(--text-muted);
+      font-size: 0.67rem;
+    }
+
+    .sn-battery-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      overflow: hidden;
+    }
+
+    .sn-battery-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--color-green);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.6), 0 0 20px rgba(34, 197, 94, 0.3);
+      transition: width 0.5s ease;
+    }
+
+    .sn-health-item--battery {
+      justify-content: space-between;
+    }
+
+    .sn-battery-pct {
+      font-size: 1.35rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-green);
+      line-height: 1.1;
+    }
+
+    .sn-battery-status-text {
+      font-size: 0.67rem;
+      color: var(--text-muted);
+      line-height: 1;
+    }
+
+    /* ── Telemetry grid ── */
+    .sn-telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 4px;
+      align-items: stretch;
+    }
+
+    /* Base card — accent colour supplied by modifier class via CSS custom prop */
+    .sn-telemetry-card {
+      --card-accent:      #94a3b8;
+      --card-accent-faint: rgba(148, 163, 184, 0.08);
+      --card-accent-glow:  rgba(148, 163, 184, 0.35);
+
+      position: relative;
+      background: var(--bg-card-subtle);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-left: 3px solid var(--card-accent);
+      border-radius: var(--radius-md);
+      padding: 10px 12px 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      min-height: 88px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+
+    /* Subtle tinted background wash */
+    .sn-telemetry-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--card-accent-faint);
+      pointer-events: none;
+    }
+
+    .sn-telemetry-card:hover {
+      border-color: var(--card-accent);
+      box-shadow: 0 0 0 1px var(--card-accent-glow), 0 4px 16px rgba(0,0,0,0.4);
+      transform: translateY(-1px);
+    }
+
+    /* ── Per-metric accent colours ── */
+    .sn-telemetry-card--temp {
+      --card-accent:       #f87171;
+      --card-accent-faint: rgba(248, 113, 113, 0.07);
+      --card-accent-glow:  rgba(248, 113, 113, 0.3);
+    }
+
+    .sn-telemetry-card--humidity {
+      --card-accent:       #22d3ee;
+      --card-accent-faint: rgba(34, 211, 238, 0.07);
+      --card-accent-glow:  rgba(34, 211, 238, 0.3);
+    }
+
+    .sn-telemetry-card--pressure {
+      --card-accent:       var(--color-accent-light);
+      --card-accent-faint: rgba(var(--color-accent-light-rgb), 0.07);
+      --card-accent-glow:  rgba(var(--color-accent-light-rgb), 0.3);
+    }
+
+    .sn-telemetry-card--heat {
+      --card-accent:       #fbbf24;
+      --card-accent-faint: rgba(251, 191, 36, 0.07);
+      --card-accent-glow:  rgba(251, 191, 36, 0.3);
+    }
+
+    /* ── Icon wraps — tinted + glow ── */
+    .sn-telemetry-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .sn-telemetry-icon-wrap svg { width: 18px; height: 18px; }
+
+    .sn-telemetry-icon-wrap.red {
+      background: rgba(248, 113, 113, 0.14);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      box-shadow: 0 0 12px rgba(248, 113, 113, 0.2);
+    }
+
+    .sn-telemetry-icon-wrap.cyan {
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.18);
+    }
+
+    .sn-telemetry-icon-wrap.accent {
+      background: rgba(var(--color-accent-light-rgb), 0.12);
+      color: var(--color-accent-light);
+      border: 1px solid rgba(var(--color-accent-light-rgb), 0.3);
+      box-shadow: 0 0 12px rgba(var(--color-accent-light-rgb), 0.2);
+    }
+
+    .sn-telemetry-icon-wrap.amber {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.18);
+    }
+
+    .sn-telemetry-body {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+      flex: 1;
+      position: relative; /* above ::before wash */
+    }
+
+    .sn-telemetry-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-weight: var(--font-weight-bold);
+      color: var(--card-accent);
+      opacity: 0.85;
+    }
+
+    .sn-telemetry-value {
+      font-size: 1.5rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--text-white);
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    /* Value gets a faint accent tint so it isn't totally neutral */
+    .sn-telemetry-card--temp     .sn-telemetry-value { color: #fecaca; }
+    .sn-telemetry-card--humidity .sn-telemetry-value { color: #a5f3fc; }
+    .sn-telemetry-card--pressure .sn-telemetry-value { color: var(--color-accent-light); }
+    .sn-telemetry-card--heat     .sn-telemetry-value { color: #fde68a; }
+
+    .sn-unit {
+      font-size: 0.85rem;
+      font-weight: var(--font-weight-medium);
+      color: var(--text-muted);
+    }
+
+    .sn-telemetry-sub {
+      font-size: 0.67rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Color helpers ── */
+    .sn-green { color: var(--color-green); }
+    .sn-amber { color: var(--color-yellow); }
+    .sn-red   { color: var(--color-red); }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      .sn-health-grid { grid-template-columns: repeat(3, 1fr); }
+      .metrics-grid--sensor { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      .sensor-control-bar { flex-direction: column; align-items: stretch; }
+      .sensor-inspector-group { flex-direction: column; align-items: stretch; }
+      .sensor-select { width: 100%; }
+      .sensor-inspector-group > .orchid-node-search { flex: 0 1 280px; width: 100%; max-width: 280px; }
+      .sensor-list-tools { width: 100%; }
+      .sensor-list-tools .sensor-select { flex: 0 0 auto; min-width: 96px; width: auto; }
+      .sn-health-grid { grid-template-columns: repeat(2, 1fr); }
+      .sn-telemetry-grid { grid-template-columns: repeat(2, 1fr); }
+      .sn-last-seen { display: none; }
+      .metrics-grid--sensor { grid-template-columns: repeat(2, 1fr); }
+      .metric-fleet-connector { display: none; }
+    }
+  </style>
+
+  <script src="../components/components.js?v=54"></script>
+  <script src="../js/ormoc-map-data.js?v=3"></script>
+  <script src="../js/sensor-management.js?v=81"></script>
+</body>
+</html>

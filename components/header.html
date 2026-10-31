@@ -1,0 +1,450 @@
+<!--
+  components/header.html
+  Redundant Design Component: Master Header / Topbar
+  Customizing this file updates the topbar across all views automatically.
+-->
+<header class="header" id="global-header">
+  <div class="header-left">
+    <div class="title-row">
+      <h1 class="page-title" id="page-heading">Dashboard Overview</h1>
+      <span class="badge-live badge-unknown" id="live-indicator" aria-label="Receiver status checking" title="Checking for a USB serial device…">
+        <span class="live-dot"></span>
+        <span class="live-text">Checking</span>
+      </span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-item" title="Time of the latest data refresh attempt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="meta-icon">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span id="updated-time">Updated <strong>— PHT</strong></span>
+      </span>
+      <span class="meta-sep" aria-hidden="true">|</span>
+      <span class="meta-item" title="Automatic data refresh runs every five minutes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="meta-icon sync-icon">
+          <polyline points="23 4 23 10 17 10"/>
+          <polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        <span id="sync-countdown">Auto-sync in <strong>05:00</strong></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="right-pill">
+      <!-- Live Weather Widget -->
+      <div class="weather-info" id="weather-pill-trigger" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="weather-dropdown" data-tip="Ormoc City weather data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="weather-icon">
+          <path d="M20 16.2A4.5 4.5 0 0 0 19 7h-1.2A7 7 0 1 0 5 16.2"/>
+        </svg>
+        <strong>—</strong>
+        <span>Loading…</span>
+      </div>
+
+      <span class="pill-divider" aria-hidden="true"></span>
+
+      <button class="icon-btn notification-trigger" id="btn-notifications" type="button"
+              aria-label="Sensor alerts" aria-haspopup="true" aria-expanded="false"
+              aria-controls="sensor-alert-panel" title="Sensor alerts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="btn-svg-icon" aria-hidden="true">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+          <path d="M10 21h4"/>
+        </svg>
+        <span class="notification-count" id="sensor-alert-count" hidden></span>
+      </button>
+
+      <span class="pill-divider" aria-hidden="true"></span>
+
+      <!-- Reload the current dashboard page -->
+      <button class="icon-btn" id="btn-manual-sync" aria-label="Refresh website" title="Refresh website" data-tip="Refresh website">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-svg-icon">
+          <polyline points="23 4 23 10 17 10"/>
+          <polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+
+      <!-- User Profile Avatar with dropdown trigger -->
+      <div class="avatar-wrap">
+        <button class="avatar-btn" id="btn-user-avatar" aria-label="User Profile: Administrator" aria-haspopup="true" aria-expanded="false" data-tip="System Officer">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="avatar-icon">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </button>
+        <!-- User Menu Dropdown -->
+        <div class="user-dropdown" id="user-dropdown-menu" role="menu">
+          <div class="dropdown-header">
+            <span class="user-name">System Officer</span>
+            <span class="user-role">Ormoc City Network</span>
+          </div>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" role="menuitem" id="btn-system-settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            System Settings
+          </button>
+          <button class="dropdown-item text-danger" role="menuitem" id="btn-logout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <section class="notification-panel" id="sensor-alert-panel" aria-label="Active sensor alerts" hidden>
+      <header class="notification-panel-header">
+        <div>
+          <h2>Sensor alerts</h2>
+          <p id="sensor-alert-summary" aria-live="polite">Checking latest sensor readings…</p>
+        </div>
+        <button class="notification-refresh" id="btn-alert-refresh" type="button" aria-label="Refresh sensor alerts" title="Refresh alerts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+      </header>
+      <ul class="notification-list" id="sensor-alert-list" aria-live="polite">
+        <li class="notification-empty">Checking latest sensor readings…</li>
+      </ul>
+      <p class="notification-panel-footer">Alerts: low battery (&lt;20%), heat index ≥32°C, or sensor offline.</p>
+    </section>
+
+    <section class="account-auth-gate" id="account-auth-gate" aria-labelledby="account-auth-title" role="dialog" aria-modal="true" hidden>
+      <div class="account-auth-card">
+        <div class="account-auth-brand">
+          <span class="account-auth-mark" aria-hidden="true">O</span>
+          <span>ORCHID · ADMINISTRATOR ACCESS</span>
+        </div>
+        <h2 id="account-auth-title">Sign in to ORCHID</h2>
+        <p class="account-auth-description" id="account-auth-description">Use the verified administrator account to continue.</p>
+        <form class="account-auth-form" id="auth-login-form" hidden>
+          <input id="auth-login-email" name="email" type="hidden" value="admin@orchid.local" />
+          <label>Administrator password
+            <span class="password-input-wrap">
+              <input id="auth-login-password" name="password" type="password" autocomplete="current-password" required />
+              <button class="password-visibility-toggle" type="button" aria-label="Show password" title="Show password">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path class="password-visibility-slash" d="m3 3 18 18" hidden></path>
+                </svg>
+              </button>
+            </span>
+          </label>
+          <button class="btn btn-primary" type="submit">Sign in</button>
+          <button class="account-auth-link" id="auth-forgot-password" type="button">Forgot password?</button>
+        </form>
+        <form class="account-auth-form" id="auth-setup-form" hidden>
+          <input id="auth-setup-name" name="display_name" type="hidden" value="System Officer" />
+          <input id="auth-setup-email" name="email" type="hidden" value="admin@orchid.local" />
+          <label>Create administrator password
+            <span class="password-input-wrap">
+              <input id="auth-setup-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+              <button class="password-visibility-toggle" type="button" aria-label="Show password" title="Show password">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path class="password-visibility-slash" d="m3 3 18 18" hidden></path>
+                </svg>
+              </button>
+            </span>
+          </label>
+          <ul class="pw-rules" aria-live="polite" data-for="auth-setup-password">
+            <li data-rule="length">At least 8 characters</li>
+            <li data-rule="upper">At least 1 uppercase letter</li>
+            <li data-rule="number">At least 1 number</li>
+            <li data-rule="special">At least 1 special character (!@#$%^&amp;*)</li>
+          </ul>
+          <button class="btn btn-primary" type="submit">Save password</button>
+        </form>
+        <div class="account-auth-recovery" id="auth-password-recovery" hidden>
+          <!-- Step 0: request the code -->
+          <form class="account-auth-form" id="auth-reset-request-form">
+            <button class="btn btn-secondary" type="submit">Send a recovery code</button>
+          </form>
+          <!-- Step 1: enter OTP -->
+          <form class="account-auth-form" id="auth-reset-otp-form" hidden>
+            <p class="account-auth-step-hint" id="auth-reset-otp-hint">A six-digit code was sent to the administrator email. Enter it below.</p>
+            <div class="otp-field" role="group" aria-label="Six-digit recovery code">
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="one-time-code" aria-label="Digit 1" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 2" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 3" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 4" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 5" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 6" />
+            </div>
+            <button class="btn btn-primary" type="submit">Verify code</button>
+            <button class="account-auth-link" id="auth-resend-code" type="button">Resend code</button>
+          </form>
+          <!-- Step 2: set new password (shown after OTP verified) -->
+          <form class="account-auth-form" id="auth-reset-confirm-form" hidden>
+            <p class="account-auth-step-hint">Code verified. Enter your new administrator password.</p>
+            <label>New administrator password
+              <span class="password-input-wrap">
+                <input id="auth-reset-password" name="new_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                <button class="password-visibility-toggle" type="button" aria-label="Show password" title="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path class="password-visibility-slash" d="m3 3 18 18" hidden></path>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <ul class="pw-rules" aria-live="polite" data-for="auth-reset-password">
+              <li data-rule="length">At least 8 characters</li>
+              <li data-rule="upper">At least 1 uppercase letter</li>
+              <li data-rule="number">At least 1 number</li>
+              <li data-rule="special">At least 1 special character (!@#$%^&amp;*)</li>
+            </ul>
+            <label>Confirm new password
+              <span class="password-input-wrap">
+                <input id="auth-reset-password-confirm" name="confirm_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                <button class="password-visibility-toggle" type="button" aria-label="Show password" title="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path class="password-visibility-slash" d="m3 3 18 18" hidden></path>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <button class="btn btn-primary" type="submit">Reset password</button>
+          </form>
+          <button class="account-auth-link" id="auth-reset-back" type="button">Back to sign in</button>
+        </div>
+        <p class="account-auth-status" id="account-auth-status" role="status" aria-live="polite"></p>
+        <button class="account-auth-retry" id="auth-retry" type="button" hidden>Retry connection</button>
+      </div>
+    </section>
+
+    <section class="weather-dropdown" id="weather-dropdown" aria-label="Ormoc City weather" aria-hidden="true">
+      <div class="weather-dropdown-header">
+        <span class="weather-dropdown-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 16.2A4.5 4.5 0 0 0 19 7h-1.2A7 7 0 1 0 5 16.2"/>
+          </svg>
+          Ormoc City weather
+        </span>
+        <button type="button" class="weather-dropdown-refresh" id="btn-weather-refresh" aria-label="Refresh weather" title="Refresh weather">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+      </div>
+      <div class="weather-main-card">
+        <div class="weather-main-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 16.2A4.5 4.5 0 0 0 19 7h-1.2A7 7 0 1 0 5 16.2"/>
+          </svg>
+        </div>
+        <div class="weather-main-info">
+          <div class="weather-main-temp">—</div>
+          <div class="weather-main-desc" aria-live="polite">Loading weather…</div>
+          <div class="weather-main-feels">Ormoc City · Open-Meteo</div>
+        </div>
+      </div>
+      <div class="weather-stats-grid">
+        <div class="weather-stat-item">
+          <span class="weather-stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22a7 7 0 0 0 7-7c0-4-7-13-7-13S5 11 5 15a7 7 0 0 0 7 7z"/>
+              <path d="M9 16a3 3 0 0 0 3 3"/>
+            </svg>
+            Humidity
+          </span>
+          <span class="weather-stat-value">—</span>
+        </div>
+        <div class="weather-stat-item">
+          <span class="weather-stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 15h12a3 3 0 1 0-3-3"/>
+              <path d="M2 9h15a3 3 0 1 0-3-3"/>
+              <path d="M4 21h8a3 3 0 1 0-3-3"/>
+            </svg>
+            Precipitation
+          </span>
+          <span class="weather-stat-value">—</span>
+        </div>
+        <div class="weather-stat-item">
+          <span class="weather-stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 8h11a3 3 0 1 0-3-3"/>
+              <path d="M2 12h16a3 3 0 1 1-3 3"/>
+              <path d="M4 16h5a3 3 0 1 1-3 3"/>
+            </svg>
+            Wind
+          </span>
+          <span class="weather-stat-value">—</span>
+        </div>
+        <div class="weather-stat-item">
+          <span class="weather-stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="m15 9-2 6-4 1 2-6 4-1z"/>
+            </svg>
+            Direction
+          </span>
+          <span class="weather-stat-value">—</span>
+        </div>
+      </div>
+      <div class="weather-dropdown-footer">
+        <span class="weather-footer-time" id="weather-updated-time"></span>
+        <a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>
+      </div>
+    </section>
+  </div>
+</header>
+
+<!-- ── Profile Modal ─────────────────────────────────────── -->
+<div class="profile-modal-backdrop" id="profile-modal" aria-modal="true" aria-hidden="true" role="dialog" aria-labelledby="profile-modal-title" hidden>
+  <div class="profile-modal-card">
+
+    <!-- Shared header (title + back button swap per page) -->
+    <div class="profile-modal-header">
+      <button class="profile-modal-back" id="profile-modal-back" type="button" aria-label="Back" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="profile-modal-avatar" id="profile-header-avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      </div>
+      <div class="profile-modal-heading">
+        <h2 class="profile-modal-title" id="profile-modal-title">System Settings</h2>
+        <p class="profile-modal-subtitle" id="profile-modal-meta">Administrator profile</p>
+      </div>
+      <button class="profile-modal-close" id="profile-modal-close" type="button" aria-label="Close profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Page slot — only one page visible at a time -->
+    <div class="profile-pages" id="profile-pages">
+
+      <!-- PAGE: main profile -->
+      <div class="profile-page" id="profile-page-main" data-page="main">
+        <section class="profile-section">
+          <h3 class="profile-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Display name
+          </h3>
+          <form class="profile-form" id="profile-name-form">
+            <div class="profile-field-row">
+              <input id="profile-display-name" type="text" maxlength="80" autocomplete="name" required placeholder="Your name" />
+              <button class="btn btn-primary btn-sm" type="submit">Save</button>
+            </div>
+          </form>
+        </section>
+
+        <div class="profile-divider"></div>
+
+        <section class="profile-section">
+          <h3 class="profile-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email address
+          </h3>
+          <p class="profile-current-value" id="profile-current-email">—</p>
+          <button class="btn btn-secondary btn-sm" id="profile-goto-email" type="button">Change email</button>
+        </section>
+
+        <div class="profile-divider"></div>
+
+        <section class="profile-section">
+          <h3 class="profile-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Password
+          </h3>
+          <p class="profile-hint">Send a verification code to your email to set a new password.</p>
+          <button class="btn btn-secondary btn-sm" id="profile-goto-password" type="button">Change password</button>
+        </section>
+      </div><!-- /#profile-page-main -->
+
+      <!-- PAGE: email change -->
+      <div class="profile-page profile-page--sub" id="profile-page-email" data-page="email" hidden>
+        <!-- Step 0: enter new email -->
+        <section class="profile-section" id="profile-email-step-0">
+          <p class="profile-hint">Enter the new email address you want to use. Codes will be sent to both your current and new address.</p>
+          <form class="profile-form" id="profile-email-form">
+            <label class="profile-label">New email address
+              <input id="profile-new-email" type="email" maxlength="254" autocomplete="email" required placeholder="new@example.invalid" />
+            </label>
+            <button class="btn btn-primary btn-sm" type="submit">Send verification codes</button>
+          </form>
+        </section>
+        <!-- Step 1: enter both codes -->
+        <section class="profile-section" id="profile-email-step-1" hidden>
+          <p class="profile-hint" id="profile-email-hint">Check both your current and new email for a 6-digit code.</p>
+          <form class="profile-form" id="profile-email-verify-form">
+            <label class="profile-label">Code sent to current email
+              <input id="profile-email-current-code" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="000000" required />
+            </label>
+            <label class="profile-label">Code sent to new email
+              <input id="profile-email-new-code" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="000000" required />
+            </label>
+            <button class="btn btn-primary btn-sm" type="submit">Confirm email change</button>
+          </form>
+        </section>
+      </div><!-- /#profile-page-email -->
+
+      <!-- PAGE: password change -->
+      <div class="profile-page profile-page--sub" id="profile-page-password" data-page="password" hidden>
+        <!-- Step 0: send code -->
+        <section class="profile-section" id="profile-pw-step-0">
+          <p class="profile-hint">A verification code will be sent to your email. Enter it on the next step before setting your new password.</p>
+          <form class="profile-form" id="profile-password-form">
+            <button class="btn btn-primary btn-sm" type="submit">Send verification code</button>
+          </form>
+        </section>
+        <!-- Step 1: enter OTP boxes -->
+        <section class="profile-section" id="profile-pw-step-1" hidden>
+          <p class="profile-hint" id="profile-password-hint">Enter the 6-digit code sent to your email.</p>
+          <form class="profile-form" id="profile-password-code-form">
+            <div class="otp-field" role="group" aria-label="Six-digit verification code">
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="one-time-code" aria-label="Digit 1" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 2" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 3" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 4" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 5" />
+              <input class="otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="off" aria-label="Digit 6" />
+            </div>
+            <button class="btn btn-primary btn-sm" type="submit">Verify code</button>
+          </form>
+        </section>
+        <!-- Step 2: new password -->
+        <section class="profile-section" id="profile-pw-step-2" hidden>
+          <form class="profile-form" id="profile-password-verify-form">
+            <label class="profile-label">New password
+              <span class="password-input-wrap">
+                <input id="profile-new-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                <button class="password-visibility-toggle" type="button" aria-label="Show password" title="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><path class="password-visibility-slash" d="m3 3 18 18" hidden/></svg>
+                </button>
+              </span>
+            </label>
+            <ul class="pw-rules" aria-live="polite" data-for="profile-new-password">
+              <li data-rule="length">At least 8 characters</li>
+              <li data-rule="upper">At least 1 uppercase letter</li>
+              <li data-rule="number">At least 1 number</li>
+              <li data-rule="special">At least 1 special character (!@#$%^&amp;*)</li>
+            </ul>
+            <label class="profile-label">Confirm new password
+              <span class="password-input-wrap">
+                <input id="profile-confirm-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required />
+                <button class="password-visibility-toggle" type="button" aria-label="Show password" title="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><path class="password-visibility-slash" d="m3 3 18 18" hidden/></svg>
+                </button>
+              </span>
+            </label>
+            <button class="btn btn-primary btn-sm" type="submit">Change password</button>
+          </form>
+        </section>
+      </div><!-- /#profile-page-password -->
+
+    </div><!-- /.profile-pages -->
+
+    <p class="profile-modal-status" id="profile-modal-status" role="status" aria-live="polite"></p>
+  </div><!-- /.profile-modal-card -->
+</div><!-- /#profile-modal -->

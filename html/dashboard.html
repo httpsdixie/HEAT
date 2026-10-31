@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORCHID | Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='6' fill='%23a6c4ee'/><ellipse cx='24' cy='10' rx='4' ry='7' fill='%235274aa'/><ellipse cx='24' cy='38' rx='4' ry='7' fill='%23364b76'/><ellipse cx='10' cy='24' rx='7' ry='4' fill='%235274aa'/><ellipse cx='38' cy='24' rx='7' ry='4' fill='%23364b76'/></svg>" />
+  <link rel="stylesheet" href="../css/theme.css?v=ormoc-navy-5" />
+  <link rel="stylesheet" href="../css/layout.css?v=profile-settings-3" />
+  <link rel="stylesheet" href="../vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="../css/dashboard.css?v=75" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <div id="sidebar-mount" class="sidebar-slot"></div>
+  <div class="main-wrapper">
+    <div id="header-mount" class="header-slot"></div>
+
+    <!-- DASHBOARD CONTENT -->
+    <main class="dashboard-viewport">
+      <!-- SECTION 1: KEY METRICS -->
+      <section class="section-metrics">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+          Operational Overview &amp; Key Metrics
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-card" id="metric-total-nodes" tabindex="0">
+            <div class="metric-icon-wrap accent">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="7" y="7" width="10" height="10" rx="1.5"/>
+                <path d="M7 9H4M7 12H4M7 15H4M17 9h3M17 12h3M17 15h3M9 7V4M12 7V4M15 7V4M9 17v3M12 17v3M15 17v3"/>
+              </svg>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">Total Nodes</span>
+              <div class="metric-value-row">
+                <span class="metric-number">0</span>
+                <span class="metric-status-badge status-deployed">Deployed</span>
+              </div>
+              <span class="metric-sub">Placed on GIS map</span>
+            </div>
+          </div>
+          <div class="metric-card" id="metric-active-nodes" tabindex="0">
+            <div class="metric-icon-wrap cyan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+              </svg>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">Working Nodes</span>
+              <div class="metric-value-row">
+                <span class="metric-number">0</span>
+                <span class="metric-status-badge status-online">Online</span>
+              </div>
+              <span class="metric-sub">Actively transmitting data</span>
+            </div>
+          </div>
+          <div class="metric-card" id="metric-inactive-nodes" tabindex="0">
+            <div class="metric-icon-wrap red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">Inactive Nodes</span>
+              <div class="metric-value-row">
+                <span class="metric-number">0</span>
+                <span class="metric-status-badge status-offline">Offline</span>
+              </div>
+              <span class="metric-sub">Not transmitting data</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: GEOSPATIAL TELEMETRY -->
+      <section class="section-telemetry">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 0 1 7.38 16.75"/><path d="M4.62 18.75A10 10 0 0 1 12 2"/>
+            <line x1="12" y1="12" x2="15" y2="9"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          </svg>
+          Geospatial &amp; Environmental Telemetry
+        </div>
+        <div class="telemetry-grid">
+          <div class="status-card" tabindex="0" data-tip="Current average temperature and heat index from deployed sensor nodes that are online. Undeployed and offline nodes are excluded.">
+            <div class="status-card-header">
+              <h2 class="status-card-title">Ormoc City average temperature</h2>
+            </div>
+            <div class="status-temp-row">
+              <div>
+                <span class="status-temp-val" id="fleet-average-temperature">—</span>
+              </div>
+              <div class="status-weather-art" id="fleet-heat-icon" data-level="no-data" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 14.76V5a3 3 0 0 0-6 0v9.76a5 5 0 1 0 6 0Z"/>
+                  <path d="M11 12V5"/>
+                  <circle cx="11" cy="18" r="2"/>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <div class="status-heat-label">Device average heat index: <span id="fleet-average-heat-index">—</span></div>
+              <div class="status-condition-desc" id="fleet-heat-summary">Waiting for sensor data.</div>
+            </div>
+            <div class="heat-index-spectrum">
+              <div class="heat-spectrum-bar">
+                <span class="heat-marker-pin" id="fleet-heat-marker" data-visible="false"></span>
+              </div>
+              <div class="heat-scale-legend">
+                <span>Safe</span><span>Caution</span><span>Extreme caution</span><span>Danger</span><span>Extreme danger</span>
+              </div>
+            </div>
+            <div class="advisories-container">
+              <div class="advisories-title">Actionable Advisories</div>
+              <div class="advisory-row">
+                <div class="advisory-badge-icon clothing">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                  </svg>
+                </div>
+                <div class="advisory-text-block">
+                  <span class="advisory-type-tag">Recommended Clothing:</span>
+                  <span class="advisory-recommendation" id="fleet-clothing-advisory">Waiting for current readings.</span>
+                </div>
+              </div>
+              <div class="advisory-row">
+                <div class="advisory-badge-icon activity">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="5" r="2"/><path d="M12 7v7M9 10l-2 5M15 10l2 5M9 17l1.5 3M15 17l-1.5 3"/>
+                  </svg>
+                </div>
+                <div class="advisory-text-block">
+                  <span class="advisory-type-tag">Activity Advisory:</span>
+                  <span class="advisory-recommendation" id="fleet-activity-advisory">Waiting for current readings.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-card" id="map-telemetry-card">
+            <div class="map-controls-panel">
+              <div class="map-title">ORMOC CITY <span>· SENSOR MAP</span></div>
+            </div>
+            <div class="map-viewport">
+              <div id="ormoc-map" class="leaflet-map" role="application" aria-label="Interactive map of Ormoc City"></div>
+              <div class="map-open-hint" aria-hidden="true">No sensor nodes have been placed on the map yet.</div>
+              <div class="map-tile-error" id="map-tile-error" role="status" hidden>Map could not be initialized.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: ANALYTICS -->
+      <section class="section-analytics">
+        <div class="section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          Situational Analytics &amp; Monitoring
+        </div>
+        <div class="analytics-grid">
+          <div class="heat-table-card analytics-interactive-card" tabindex="0"
+               data-tip-title="HEAT INDEX"
+               data-tip-description="How hot the air actually feels when temperature and humidity are combined — more relevant to health risk than temperature alone. This dashboard ranks the four highest current readings from online deployed nodes."
+               data-tip-points="Caution (27–32°C): Fatigue possible with prolonged exposure|Extreme Caution (32–41°C): Heat cramps and exhaustion possible|Danger (41–54°C): Heat exhaustion likely, heat stroke possible|Extreme Danger (above 54°C): Heat stroke imminent"
+               data-tip-reading="This is the primary indicator used by ORCHID for public health advisories. Always act on Heat Index — not temperature alone.">
+            <div class="card-title-sm">Heat Index</div>
+            <div class="heat-mini-grid" id="fleet-heat-analytics">
+              <div class="dashboard-empty-state">No online deployed-node heat-index readings available.</div>
+            </div>
+          </div>
+          <div class="telemetry-stat-card telemetry-stat-card--temperature analytics-interactive-card" tabindex="0"
+               data-tip-title="TEMPERATURE"
+               data-tip-description="The ambient air temperature measured directly at the node's location, in degrees Celsius. This dashboard shows the average across online deployed nodes."
+               data-tip-points="Cool: below 24°C — comfortable outdoor conditions|Warm: 24–32°C — moderate heat exposure|Hot: 32–38°C — limit prolonged outdoor activity|Extreme: above 38°C — high health risk, avoid exposure"
+               data-tip-reading="Temperature alone does not capture how hot it feels. Cross-reference with the Heat Index for a more accurate risk assessment.">
+            <div class="stat-card-header">
+              <span class="stat-metric-name">Temperature</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stat-top-icon"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+            </div>
+            <div class="stat-body-row">
+              <div class="stat-large-val" id="fleet-analytics-temperature">—</div>
+              <div class="telemetry-chart" id="fleet-analytics-temperature-chart" aria-live="polite" aria-label="Temperature trend sparkline"></div>
+            </div>
+            <span class="stat-subtext" id="fleet-analytics-temperature-sub">Waiting for data</span>
+          </div>
+          <div class="telemetry-stat-card telemetry-stat-card--humidity analytics-interactive-card" tabindex="0"
+               data-tip-title="HUMIDITY"
+               data-tip-description="The amount of water vapor in the air as a percentage of the maximum it can hold at the current temperature. This dashboard shows the average across online deployed nodes."
+               data-tip-points="Dry: below 40% — low moisture, possible dehydration risk|Comfortable: 40–60% — optimal range for most people|Humid: 60–80% — noticeable stickiness, elevated heat stress|Very Humid: above 80% — high heat index amplification, monitor closely"
+               data-tip-reading="High humidity prevents effective sweating, making the body feel hotter than the actual temperature. It is the key driver of a high heat index.">
+            <div class="stat-card-header">
+              <span class="stat-metric-name">Humidity</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stat-top-icon"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            </div>
+            <div class="stat-body-row">
+              <div class="stat-large-val" id="fleet-analytics-humidity">—</div>
+              <div class="telemetry-chart" id="fleet-analytics-humidity-chart" aria-live="polite" aria-label="Humidity trend sparkline"></div>
+            </div>
+            <span class="stat-subtext" id="fleet-analytics-humidity-sub">Waiting for data</span>
+          </div>
+          <div class="telemetry-stat-card telemetry-stat-card--pressure analytics-interactive-card" tabindex="0"
+               data-tip-title="PRESSURE"
+               data-tip-description="Atmospheric pressure measured in hectopascals (hPa) — the weight of the air column above the sensor. This dashboard shows the average across online deployed nodes."
+               data-tip-points="Low: below 1000 hPa — possible storm or rain system approaching|Normal: 1000–1020 hPa — stable conditions|High: above 1020 hPa — fair weather, clear skies likely"
+               data-tip-reading="A rapid drop in pressure often precedes heavy rain or thunderstorms. A rising trend generally indicates improving conditions.">
+            <div class="stat-card-header">
+              <span class="stat-metric-name">Pressure</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stat-top-icon"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="stat-body-row">
+              <div class="stat-large-val" id="fleet-analytics-pressure">—</div>
+              <div class="telemetry-chart" id="fleet-analytics-pressure-chart" aria-live="polite" aria-label="Pressure trend sparkline"></div>
+            </div>
+            <span class="stat-subtext" id="fleet-analytics-pressure-sub">Waiting for data</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast-mount"></div>
+<div id="modal-mount"></div>
+
+<script src="../components/components.js?v=54"></script>
+<script src="../vendor/leaflet/leaflet.js"></script>
+<script src="../js/ormoc-map-data.js?v=3"></script>
+<script src="../js/dashboard.js?v=95"></script>
+
+</body>
+</html>
