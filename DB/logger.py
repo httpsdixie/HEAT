@@ -231,59 +231,70 @@ def main():
     print("🟢 Listening for packets... (Ctrl+C to stop)")
     print("-" * 60)
 
+    line_buffer = ''   # accumulate partial lines across reconnects
+
     try:
         while True:
             try:
-                raw = ser.readline().decode('utf-8', errors='ignore').strip()
+                chunk = ser.read(ser.in_waiting or 1).decode('utf-8', errors='ignore')
             except serial.SerialException:
                 print("⚠️  Serial disconnected. Reconnecting...")
+                line_buffer = ''   # discard any partial line — it's corrupt
                 try:
                     ser.close()
                 except Exception:
                     pass
-                # Wait and re-detect the port in case it re-enumerated
                 while True:
                     time.sleep(3)
                     try:
                         port = find_serial_port()
                         ser = serial.Serial(port, BAUD_RATE, timeout=2)
-                        ser.reset_input_buffer()   # discard partial line from disconnect
+                        ser.reset_input_buffer()
                         print(f"✅ Reconnected to {port}")
                         break
                     except Exception as reconnect_err:
                         print(f"   Waiting for receiver... ({reconnect_err})")
                 continue
 
-            if not raw:
+            if not chunk:
                 continue
 
-            # Skip non-JSON lines (boot messages, serial noise)
-            if not raw.startswith('{'):
-                print(f"   [device] {raw}")
-                continue
+            line_buffer += chunk
 
-            try:
-                msg = json.loads(raw)
-            except json.JSONDecodeError:
-                print(f"   [bad json] {raw}")
-                continue
+            # Process every complete newline-terminated line in the buffer
+            while '\n' in line_buffer:
+                raw, line_buffer = line_buffer.split('\n', 1)
+                raw = raw.strip()
+                if not raw:
+                    continue
 
-            if not isinstance(msg, dict):
-                print("   [invalid packet] JSON message must be an object.")
-                continue
+                # Skip non-JSON lines (boot messages, serial noise)
+                if not raw.startswith('{'):
+                    print(f"   [device] {raw}")
+                    continue
 
-            t = msg.get('type')
-            try:
-                if t == 'data':
-                    handle_data(conn, msg)
-                elif t == 'heartbeat':
-                    handle_heartbeat(conn, msg)
-                elif t == 'boot':
-                    print(f"   [boot] receiver ready")
-                else:
-                    print(f"   [unknown packet type] {t!r}")
-            except ValueError as packet_error:
-                print(f"   [invalid packet] {packet_error}")
+                try:
+                    msg = json.loads(raw)
+                except json.JSONDecodeError:
+                    print(f"   [bad json] {raw}")
+                    continue
+
+                if not isinstance(msg, dict):
+                    print("   [invalid packet] JSON message must be an object.")
+                    continue
+
+                t = msg.get('type')
+                try:
+                    if t == 'data':
+                        handle_data(conn, msg)
+                    elif t == 'heartbeat':
+                        handle_heartbeat(conn, msg)
+                    elif t == 'boot':
+                        print(f"   [boot] receiver ready")
+                    else:
+                        print(f"   [unknown packet type] {t!r}")
+                except ValueError as packet_error:
+                    print(f"   [invalid packet] {packet_error}")
 
     except KeyboardInterrupt:
         print("\n" + "-" * 60)

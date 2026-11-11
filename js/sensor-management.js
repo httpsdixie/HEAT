@@ -56,6 +56,11 @@
   let fleetPagination = null;
   let selectedFleetNodeKey = null;
   let showFleetNode = null;
+  let inspectedSensor = null;
+  let batteryHistoryVisible = false;
+  let batteryHistoryRequestId = 0;
+  let batteryHistoryRange = 'recent';
+  let batteryHistorySensor = null;
 
   function persistSensorView(view) {
     sessionStorage.setItem('orchid-sensor-tab', view);
@@ -853,6 +858,7 @@
   // ──────────────────────────────────────────────────────────────────────────
 
   function populateInspector(sensor) {
+    inspectedSensor = sensor;
     const isOnline = sensor.status === 'Online';
 
     // Node identity
@@ -973,6 +979,264 @@
         ? heatIndexLevel(sensor.heatIndex)
         : '—';
     }
+
+    if (batteryHistoryVisible) loadBatteryHistory(sensor, batteryHistoryRange);
+  }
+
+  function batteryHistoryReadings(sensor) {
+    return sensor.recentReadings
+      .map((reading) => {
+        const millivolts = Number(reading.battery);
+        const timestamp = new Date(reading.createdAt);
+        if (!Number.isFinite(millivolts) || !Number.isFinite(timestamp.getTime())) return null;
+        const percent = estimateBatteryPercent(`${millivolts} mV`);
+        return percent === null ? null : { timestamp, percent };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  function appendBatterySvgElement(svg, name, attributes, text) {
+    const element = document.createElementNS('http://www.w3.org/2000/svg', name);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    if (text !== undefined) element.textContent = text;
+    svg.appendChild(element);
+    return element;
+  }
+
+  function formatBatteryHistoryDate(date) {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Manila',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23'
+    }).format(date);
+  }
+
+  function manilaDateString(date) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function offsetManilaDate(date, offsetDays) {
+    const [year, month, day] = manilaDateString(date).split('-').map(Number);
+    const shifted = new Date(Date.UTC(year, month - 1, day + offsetDays));
+    return [
+      shifted.getUTCFullYear(),
+      String(shifted.getUTCMonth() + 1).padStart(2, '0'),
+      String(shifted.getUTCDate()).padStart(2, '0')
+    ].join('-');
+  }
+
+  async function loadBatteryHistory(sensor, range) {
+    const requestId = ++batteryHistoryRequestId;
+    const status = document.getElementById('sensor-battery-history-range-status');
+    const empty = document.getElementById('sensor-battery-chart-empty');
+    const chart = document.getElementById('sensor-battery-chart');
+    if (!status || !empty || !chart) return;
+
+    if (range === 'recent') {
+      const readings = batteryHistoryReadings(sensor);
+      status.textContent = readings.length
+        ? `${manilaDateString(readings[0].timestamp)} – ${manilaDateString(readings[readings.length - 1].timestamp)}`
+        : 'No readings';
+      renderBatteryHistory(sensor);
+      return;
+    }
+
+    const today = manilaDateString(new Date());
+    const startDate = range === 'yesterday'
+      ? offsetManilaDate(new Date(), -1)
+      : range === '7-days' ? offsetManilaDate(new Date(), -6)
+        : range === '30-days' ? offsetManilaDate(new Date(), -29) : today;
+    const endDate = range === 'yesterday' ? startDate : today;
+    status.textContent = 'Loading readings…';
+    chart.hidden = true;
+    empty.hidden = false;
+    empty.textContent = 'Loading battery history…';
+
+    try {
+      const params = new URLSearchParams({ startDate, endDate });
+      const response = await fetch(`/api/nodes?${params}`, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' }
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || `Battery history request failed (${response.status}).`);
+      if (!Array.isArray(payload.nodes)) throw new Error('The battery history API returned invalid data.');
+      if (requestId !== batteryHistoryRequestId) return;
+
+      const node = payload.nodes.find((item) => item.key === sensor.key);
+      if (!node) throw new Error(`Sensor ${sensor.id} is missing from the battery history response.`);
+      const historySensor = {
+        ...sensor,
+        recentReadings: Array.isArray(node.dateReadings) ? node.dateReadings : []
+      };
+      status.textContent = `${startDate} – ${endDate}`;
+      renderBatteryHistory(historySensor);
+    } catch (error) {
+      if (requestId !== batteryHistoryRequestId) return;
+      console.error(`Could not load battery history for sensor ${sensor.id}.`, error);
+      chart.hidden = true;
+      empty.hidden = false;
+      empty.textContent = 'Battery history could not be loaded. Try another range or return to recent readings.';
+      status.textContent = 'History unavailable';
+    }
+  }
+
+  function renderBatteryHistory(sensor) {
+    const current = document.getElementById('sensor-battery-history-current');
+    const voltage = document.getElementById('sensor-battery-history-voltage');
+    const chart = document.getElementById('sensor-battery-chart');
+    const empty = document.getElementById('sensor-battery-chart-empty');
+    const note = document.getElementById('sensor-battery-history-note');
+    if (!current || !voltage || !chart || !empty || !note) return;
+    batteryHistorySensor = sensor;
+
+    const percent = estimateBatteryPercent(sensor.battery);
+    current.textContent = percent === null ? '—' : `${percent}%`;
+    current.style.color = batteryColor(percent);
+    voltage.textContent = formatBatteryVoltage(sensor.battery) || 'Voltage unavailable';
+
+    const allReadings = batteryHistoryReadings(sensor);
+    chart.replaceChildren();
+    empty.hidden = allReadings.length > 0;
+    chart.hidden = allReadings.length === 0;
+    if (allReadings.length === 0) {
+      empty.textContent = 'No battery history is available for this sensor in the selected range.';
+      note.textContent = 'Charge is estimated from recorded voltage and is an approximate indicator, not a calibrated measurement.';
+      return;
+    }
+
+    const width = 1200;
+    const chartBounds = chart.getBoundingClientRect();
+    if (!chartBounds.width || !chartBounds.height) return;
+    const height = width * chartBounds.height / chartBounds.width;
+    const left = 76;
+    const right = 1178;
+    const top = height * 0.08;
+    const bottom = height * 0.8;
+    const maxPlottedPoints = 600;
+    const readings = allReadings.length <= maxPlottedPoints
+      ? allReadings
+      : Array.from({ length: maxPlottedPoints }, (_, index) =>
+        allReadings[Math.round(index * (allReadings.length - 1) / (maxPlottedPoints - 1))]);
+    const xForTime = (timestamp) => {
+      const start = readings[0].timestamp.getTime();
+      const span = readings[readings.length - 1].timestamp.getTime() - start;
+      return span === 0 ? (left + right) / 2 : left + ((timestamp - start) / span) * (right - left);
+    };
+    const yForPercent = (value) => bottom - (value / 100) * (bottom - top);
+
+    chart.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    chart.setAttribute('aria-label',
+      `Estimated battery charge history for sensor ${sensor.id}, ${readings.length} readings from ${formatBatteryHistoryDate(readings[0].timestamp)} to ${formatBatteryHistoryDate(readings[readings.length - 1].timestamp)}.`);
+
+    [100, 80, 50, 20, 0].forEach((tick) => {
+      const y = yForPercent(tick);
+      appendBatterySvgElement(chart, 'line', {
+        x1: left, y1: y, x2: right, y2: y,
+        stroke: 'rgba(166, 196, 238, 0.18)', 'stroke-width': 1
+      });
+      appendBatterySvgElement(chart, 'text', {
+        x: left - 12, y: y + 4, 'text-anchor': 'end'
+      }, `${tick}%`);
+    });
+
+    const points = readings.map((reading) => ({
+      x: xForTime(reading.timestamp.getTime()),
+      y: yForPercent(reading.percent),
+      percent: reading.percent
+    }));
+    const path = points.map((point, index) =>
+      `${index === 0 ? 'M' : 'L'}${point.x.toFixed(2)},${point.y.toFixed(2)}`
+    ).join(' ');
+    if (points.length > 1) {
+      appendBatterySvgElement(chart, 'path', {
+        d: path,
+        fill: 'none',
+        stroke: 'var(--color-green)',
+        'stroke-width': 3,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round'
+      });
+    }
+    points.forEach((point, index) => {
+      appendBatterySvgElement(chart, 'circle', {
+        cx: point.x,
+        cy: point.y,
+        r: index === points.length - 1 ? 5 : 2.5,
+        fill: 'var(--color-green)'
+      });
+    });
+
+    const firstTime = readings[0].timestamp.getTime();
+    const lastTime = readings[readings.length - 1].timestamp.getTime();
+    [0, 0.25, 0.5, 0.75, 1].forEach((fraction) => {
+      const date = new Date(firstTime + (lastTime - firstTime) * fraction);
+      appendBatterySvgElement(chart, 'text', {
+        x: left + (right - left) * fraction,
+        y: height * 0.94,
+        'text-anchor': fraction === 0 ? 'start' : fraction === 1 ? 'end' : 'middle'
+      }, formatBatteryHistoryDate(date));
+    });
+    note.textContent = `${allReadings.length} recorded reading${allReadings.length === 1 ? '' : 's'}${readings.length < allReadings.length ? ` · showing ${readings.length} evenly spaced points` : ''} · charge estimated from voltage, not a calibrated measurement.`;
+  }
+
+  function initBatteryHistoryToggle() {
+    const overview = document.getElementById('sensor-overview-view');
+    const batteryCard = overview?.querySelector('.sn-health-item--battery');
+    const details = overview?.querySelector('.sensor-shell-grid');
+    const history = document.getElementById('sensor-battery-history');
+    const rangeSelect = document.getElementById('sensor-battery-history-range');
+    const viewport = document.querySelector('.dashboard-viewport');
+    if (!batteryCard || !details || !history || !rangeSelect) return;
+
+    const setVisible = (visible, moveFocus = false) => {
+      if (visible && !inspectedSensor) return;
+      batteryHistoryVisible = visible;
+      details.hidden = visible;
+      history.hidden = !visible;
+      viewport?.classList.toggle('dashboard-viewport--battery-history', visible);
+      batteryHistoryRequestId += 1;
+      if (visible) {
+        rangeSelect.value = batteryHistoryRange;
+        loadBatteryHistory(inspectedSensor, batteryHistoryRange);
+        if (moveFocus) rangeSelect.focus({ preventScroll: true });
+      } else {
+        batteryCard.focus({ preventScroll: true });
+      }
+    };
+
+    rangeSelect.addEventListener('change', () => {
+      batteryHistoryRange = rangeSelect.value;
+      if (inspectedSensor && batteryHistoryVisible) loadBatteryHistory(inspectedSensor, batteryHistoryRange);
+    });
+    batteryCard.title = 'Double-click or press Enter to view battery history';
+    batteryCard.addEventListener('dblclick', () => setVisible(true));
+    batteryCard.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      event.stopPropagation();
+      setVisible(!batteryHistoryVisible, true);
+    });
+    history.addEventListener('dblclick', (event) => {
+      if (!event.target.closest('select')) setVisible(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && batteryHistoryVisible) setVisible(false);
+    });
+    window.addEventListener('resize', () => {
+      if (batteryHistoryVisible && batteryHistorySensor) renderBatteryHistory(batteryHistorySensor);
+    });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -1028,6 +1292,7 @@
     await renderSensorActivity();
     await renderSensorList();
     initViewToggle();
+    initBatteryHistoryToggle();
     await initNodeInspector();
     if (requestedNodeId) {
       const requestedNode = allSensors.find((sensor) => sensor.id === requestedNodeId);

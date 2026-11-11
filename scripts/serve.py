@@ -181,7 +181,8 @@ def build_mock_nodes():
                 "temperature": round(mock_node["temperature"] + wave * metric_amplitudes["temperature"], 2),
                 "humidity": round(mock_node["humidity"] + wave * metric_amplitudes["humidity"], 2),
                 "pressure": round(mock_node["pressure"] + wave * metric_amplitudes["pressure"], 2),
-                "heatIndex": round(mock_node["heat_index"] + wave * metric_amplitudes["heat_index"], 2)
+                "heatIndex": round(mock_node["heat_index"] + wave * metric_amplitudes["heat_index"], 2),
+                "battery": round(mock_node["battery_mv"] + wave * 20)
             })
         nodes.append({
             "key": f"node-{node_id:02d}",
@@ -220,8 +221,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "same-origin")
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # Browser closed the connection before we finished — harmless
 
     def send_session_cookie(self, token, max_age=SESSION_TTL_SECONDS):
         self.send_header(
@@ -755,7 +759,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 recent_params = []
                 for nrow in node_id_rows:
                     recent_parts.append(f"""
-                        SELECT node_id, created_at, temperature, humidity, pressure, {heat_index_expression}
+                        SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, {heat_index_expression}
                         FROM readings
                         WHERE node_id = ?
                         ORDER BY id DESC
@@ -780,7 +784,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     selected_date_rows = []
                     for nrow in node_id_rows:
                         rows_for_node = connection.execute(f"""
-                            SELECT node_id, created_at, temperature, humidity, pressure, {heat_index_expression}
+                            SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, {heat_index_expression}
                             FROM readings
                             WHERE node_id = ?
                               AND created_at >= ?
@@ -817,7 +821,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                         "temperature": reading["temperature"],
                         "humidity": reading["humidity"],
                         "pressure": reading["pressure"],
-                        "heatIndex": reading["heat_index"]
+                        "heatIndex": reading["heat_index"],
+                        "battery": reading["battery_mv"]
                     })
 
             append_readings(recent_rows, recent_by_node)
@@ -1243,7 +1248,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     return
                 self.handle_api_get(parsed.path, parsed.query)
             except (sqlite3.Error, OSError) as error:
-                self.send_json(503, {"error": f"Could not read ORCHID data: {error}"})
+                try:
+                    self.send_json(503, {"error": f"Could not read ORCHID data: {error}"})
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
             return
         super().do_GET()
 

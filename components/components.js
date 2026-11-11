@@ -1203,18 +1203,25 @@ window.OrchidComponentLoader = {
       date.setUTCDate(date.getUTCDate() + count);
       return dateKey(date);
     };
-    let startDate = validDate(options.initialStartDate)
-      ? options.initialStartDate
-      : validDate(options.initialDate) ? options.initialDate : today;
-    let endDate = validDate(options.initialEndDate)
-      ? options.initialEndDate
-      : validDate(options.initialDate) ? options.initialDate : today;
-    if (startDate > endDate) startDate = endDate;
-    if (!options.allowLongInitialRange && addDays(startDate, maxRangeDays - 1) < endDate) {
+    const allowEmptyRange = options.allowEmptyRange === true;
+    const useEmptyInitialRange = allowEmptyRange &&
+      !options.initialStartDate && !options.initialEndDate && !options.initialDate;
+    let startDate = useEmptyInitialRange
+      ? null
+      : validDate(options.initialStartDate)
+        ? options.initialStartDate
+        : validDate(options.initialDate) ? options.initialDate : today;
+    let endDate = useEmptyInitialRange
+      ? null
+      : validDate(options.initialEndDate)
+        ? options.initialEndDate
+        : validDate(options.initialDate) ? options.initialDate : today;
+    if (startDate && startDate > endDate) startDate = endDate;
+    if (startDate && !options.allowLongInitialRange && addDays(startDate, maxRangeDays - 1) < endDate) {
       startDate = addDays(endDate, -(maxRangeDays - 1));
     }
     let draftStartDate = null;
-    let displayedDate = parseDate(startDate);
+    let displayedDate = parseDate(startDate || today);
 
     mountEl.replaceWith(root);
 
@@ -1230,8 +1237,9 @@ window.OrchidComponentLoader = {
       parseDate(end)
     );
     const updateLabel = () => {
-      dateLabel.textContent = formatRange(startDate, endDate);
-      trigger.setAttribute('aria-label', `Choose date range, ${formatRange(startDate, endDate)}`);
+      const label = startDate && endDate ? formatRange(startDate, endDate) : 'Choose dates';
+      dateLabel.textContent = label;
+      trigger.setAttribute('aria-label', `Choose date range, ${label}`);
     };
     const updateInstruction = () => {
       instruction.textContent = draftStartDate
@@ -1298,7 +1306,7 @@ window.OrchidComponentLoader = {
       }
     };
     const focusSelectedDate = () => {
-      const focusDate = draftStartDate || startDate;
+      const focusDate = draftStartDate || startDate || today;
       daysGrid.querySelector(`button[data-date="${focusDate}"]`)?.focus({ preventScroll: true });
     };
 
@@ -1311,7 +1319,7 @@ window.OrchidComponentLoader = {
         return;
       }
       draftStartDate = null;
-      displayedDate = parseDate(startDate);
+      displayedDate = parseDate(startDate || today);
       updateInstruction();
       renderCalendar();
       calendar.hidden = false;
@@ -1381,8 +1389,8 @@ window.OrchidComponentLoader = {
       if (root.isConnected && !event.composedPath().includes(root) && !calendar.hidden) closeCalendar();
     });
     resetButton.addEventListener('click', () => {
-      startDate = today;
-      endDate = today;
+      startDate = allowEmptyRange ? null : today;
+      endDate = allowEmptyRange ? null : today;
       draftStartDate = null;
       displayedDate = parseDate(today);
       updateLabel();
@@ -1396,14 +1404,15 @@ window.OrchidComponentLoader = {
       getStartDate: () => startDate,
       getEndDate: () => endDate,
       setRange: (start, end, allowLongRange = false) => {
-        startDate = validDate(start) ? start : today;
-        endDate = validDate(end) ? end : today;
-        if (startDate > endDate) startDate = endDate;
-        if (!allowLongRange && addDays(startDate, maxRangeDays - 1) < endDate) {
+        const emptyRange = allowEmptyRange && !start && !end;
+        startDate = emptyRange ? null : validDate(start) ? start : today;
+        endDate = emptyRange ? null : validDate(end) ? end : today;
+        if (startDate && startDate > endDate) startDate = endDate;
+        if (startDate && !allowLongRange && addDays(startDate, maxRangeDays - 1) < endDate) {
           startDate = addDays(endDate, -(maxRangeDays - 1));
         }
         draftStartDate = null;
-        displayedDate = parseDate(startDate);
+        displayedDate = parseDate(startDate || today);
         updateLabel();
         updateInstruction();
         renderCalendar();

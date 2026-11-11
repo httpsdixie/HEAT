@@ -240,6 +240,7 @@
                   <div class="sn-battery-bar" role="progressbar" aria-label="Estimated battery charge" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Battery level unavailable">
                     <div class="sn-battery-fill" id="sn-battery-fill" style="width: 0%"></div>
                   </div>
+                  <span class="sn-battery-history-hint">Double-click for history</span>
                 </div>
                 <div class="sn-health-item analytics-interactive-card"
                      tabindex="0"
@@ -378,6 +379,35 @@
 
             </div>
 
+          </div>
+          <div class="status-card sensor-battery-history" id="sensor-battery-history" aria-label="Battery history" hidden>
+            <div class="sensor-battery-history-header">
+              <div>
+                <div class="sn-section-heading">Battery History</div>
+              </div>
+              <div class="sensor-battery-history-tools">
+                <span class="sensor-battery-history-range-status" id="sensor-battery-history-range-status" role="status" aria-live="polite"></span>
+                <label class="hi-history-status-filter">
+                  <span class="hi-history-status-label">Quick range</span>
+                  <select class="hi-history-status-select" id="sensor-battery-history-range" aria-label="Choose a battery history range">
+                    <option value="recent">Recent readings</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="7-days">Last 7 days</option>
+                    <option value="30-days">Last 30 days</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="sensor-battery-history-summary">
+              <strong class="sn-battery-pct" id="sensor-battery-history-current">—</strong>
+              <span class="sn-battery-status-text" id="sensor-battery-history-voltage">Current estimated charge</span>
+            </div>
+            <div class="sensor-battery-chart-wrap">
+              <svg class="sensor-battery-chart" id="sensor-battery-chart" viewBox="0 0 900 320" role="img"></svg>
+              <p class="sensor-battery-chart-empty" id="sensor-battery-chart-empty" role="status" hidden></p>
+            </div>
+            <p class="sensor-battery-history-note" id="sensor-battery-history-note">Charge is estimated from recorded voltage and is an approximate indicator, not a calibrated measurement. Double-click the graph to return to the sensor details.</p>
           </div>
         </section>
 
@@ -880,11 +910,27 @@
       scrollbar-width: thin;
     }
 
+    .dashboard-viewport--battery-history {
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-color: var(--border-accent-bright) transparent;
+      scrollbar-width: thin;
+    }
+
     .dashboard-viewport--sensor-table-view > .section-metrics {
       flex: 0 0 auto;
     }
 
+    .dashboard-viewport--battery-history > .section-metrics {
+      flex: 0 0 auto;
+    }
+
     .dashboard-viewport--sensor-table-view > .section-telemetry {
+      flex: 1 0 360px;
+      min-height: 360px;
+    }
+
+    .dashboard-viewport--battery-history > #sensor-overview-view {
       flex: 1 0 360px;
       min-height: 360px;
     }
@@ -1076,6 +1122,11 @@
       gap: 12px;
       height: 100%;
       min-height: 0;
+    }
+
+    .sensor-shell-grid[hidden],
+    .sensor-battery-chart[hidden] {
+      display: none;
     }
 
     .sensor-card-main {
@@ -1306,6 +1357,134 @@
       line-height: 1;
     }
 
+    .sn-battery-history-hint {
+      color: var(--color-accent-light);
+      font-size: 0.58rem;
+      line-height: 1;
+    }
+
+    .sensor-battery-history[hidden] {
+      display: none;
+    }
+
+    .sensor-battery-history {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      padding: 22px 24px;
+      gap: 12px;
+      justify-content: flex-start;
+    }
+
+    .sensor-battery-history-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .sensor-battery-history-note {
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+      margin-top: 5px;
+    }
+
+    .sensor-battery-history-summary {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-height: 25px;
+    }
+
+    .sensor-battery-history-summary .sn-battery-pct {
+      font-size: 1.15rem;
+    }
+
+    .sensor-battery-history-summary .sn-battery-status-text {
+      border-left: 1px solid var(--border-soft);
+      padding-left: 8px;
+      font-size: var(--font-size-xs);
+    }
+
+    .sensor-battery-history-tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sensor-battery-history-range-status {
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+      white-space: nowrap;
+    }
+
+    .sensor-battery-history-range-status:empty {
+      display: none;
+    }
+
+    .sensor-battery-chart-wrap {
+      position: relative;
+      flex: 1 1 0;
+      min-height: 0;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-md);
+      background: rgba(5, 10, 35, 0.3);
+      overflow: hidden;
+    }
+
+    .sensor-battery-chart {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .sensor-battery-chart-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      color: var(--text-muted);
+      text-align: center;
+      font-size: var(--font-size-sm);
+    }
+
+    .sensor-battery-chart-empty[hidden] {
+      display: none;
+    }
+
+    .sensor-battery-chart text {
+      fill: var(--text-muted);
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .sensor-battery-history {
+        padding: 14px;
+      }
+
+      .sensor-battery-history-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .sensor-battery-history-tools {
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      .sensor-battery-history-range-status {
+        white-space: normal;
+      }
+
+      .sensor-battery-chart-wrap,
+      .sensor-battery-chart {
+        min-height: 180px;
+      }
+    }
+
     /* ── Telemetry grid ── */
     .sn-telemetry-grid {
       display: grid;
@@ -1489,6 +1668,6 @@
 
   <script src="../components/components.js?v=54"></script>
   <script src="../js/ormoc-map-data.js?v=3"></script>
-  <script src="../js/sensor-management.js?v=81"></script>
+  <script src="../js/sensor-management.js?v=87"></script>
 </body>
 </html>

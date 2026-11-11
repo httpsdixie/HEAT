@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='6' fill='%23a6c4ee'/><ellipse cx='24' cy='10' rx='4' ry='7' fill='%235274aa'/><ellipse cx='24' cy='38' rx='4' ry='7' fill='%23364b76'/><ellipse cx='10' cy='24' rx='7' ry='4' fill='%235274aa'/><ellipse cx='38' cy='24' rx='7' ry='4' fill='%23364b76'/></svg>" />
   <link rel="stylesheet" href="../css/theme.css?v=ormoc-navy-5" />
   <link rel="stylesheet" href="../css/layout.css?v=profile-settings-3" />
-  <link rel="stylesheet" href="../css/dashboard.css?v=84" />
+  <link rel="stylesheet" href="../css/dashboard.css?v=85" />
 </head>
 <body>
   <div class="app-shell">
@@ -33,7 +33,20 @@
                 History Data
               </button>
             </div>
-            <div id="hi-date-filter-mount"></div>
+            <div class="hi-telemetry-date-tools" aria-label="Telemetry date range">
+              <label class="hi-history-status-filter hi-history-quick-range">
+                <span class="hi-history-status-label">Quick range</span>
+                <select id="hi-history-quick-range" class="hi-history-status-select" aria-label="Choose a telemetry date range">
+                  <option value="all-time">All time</option>
+                  <option value="today">Today</option>
+                  <option value="yesterday">Yesterday</option>
+                  <option value="7-days">Last 7 days</option>
+                  <option value="30-days">Last 30 days</option>
+                  <option value="custom">Selected dates</option>
+                </select>
+              </label>
+              <div id="hi-date-filter-mount"></div>
+            </div>
             <div class="hi-history-tools" id="hi-history-tools" aria-label="Historical data tools">
               <label class="hi-history-status-filter">
                 <span class="hi-history-status-label">Status</span>
@@ -139,7 +152,7 @@
   </div>
   <div id="toast-mount"></div>
   <div id="modal-mount"></div>
-  <script src="../components/components.js?v=58"></script>
-  <script src="../js/dashboard.js?v=98"></script>
+  <script src="../components/components.js?v=59"></script>
+  <script src="../js/dashboard.js?v=99"></script>
 </body>
 </html>

@@ -16,6 +16,9 @@
   let databaseRefreshInProgress = false;
   let databaseConnected = false;
   let nodeHistoryRequestId = 0;
+  let allHistoryLoaded = false;
+  let allHistoryNodes = [];
+  let allHistoryStartDate = null;
   const hiddenHeatTrendSeries = new Set();
   const requestedMetric = new URLSearchParams(window.location.search).get('metric');
   const selectedMetric = ['temperature', 'humidity', 'pressure'].includes(requestedMetric)
@@ -36,8 +39,8 @@
   const heatLocationPageSize = 7;
   const HEAT_INDEX_VIEW_STORAGE_KEY = `orchid-${selectedMetric}-view`;
   const MAX_TREND_RANGE_DAYS = 30;
-  let heatIndexStartDate = manilaDateString(new Date());
-  let heatIndexEndDate = heatIndexStartDate;
+  let heatIndexStartDate = null;
+  let heatIndexEndDate = null;
 
   // Restore the selected date range from the URL (survives auto-refresh).
   (function restoreFromUrl() {
@@ -131,16 +134,92 @@
 
   async function loadNodesFromDatabase(historyStartDate = null, historyEndDate = null) {
     const requestId = ++nodeHistoryRequestId;
-    const endpoint = historyStartDate && historyEndDate
-      ? `/api/nodes?startDate=${encodeURIComponent(historyStartDate)}&endDate=${encodeURIComponent(historyEndDate)}`
-      : '/api/nodes';
-    const payload = await requestJson(endpoint);
-    if (requestId !== nodeHistoryRequestId) return false;
-    if (!Array.isArray(payload.nodes) || payload.nodes.some((node) =>
-      !node || typeof node.key !== 'string' || typeof node.id !== 'string' || typeof node.status !== 'string')) {
-      throw new Error('The sensor database returned an invalid node list.');
+    const validateNodes = (payload) => {
+      if (!Array.isArray(payload.nodes) || payload.nodes.some((node) =>
+        !node || typeof node.key !== 'string' || typeof node.id !== 'string' || typeof node.status !== 'string')) {
+        throw new Error('The sensor database returned an invalid node list.');
+      }
+      return payload.nodes;
+    };
+    const mergeReadings = (...sources) => {
+      const readingsByKey = new Map();
+      sources.flat().forEach((reading) => {
+        readingsByKey.set(
+          `${reading.createdAt}|${reading.temperature}|${reading.humidity}|${reading.pressure}|${reading.heatIndex}`,
+          reading
+        );
+      });
+      return [...readingsByKey.values()];
+    };
+
+    if (historyStartDate && historyEndDate) {
+      const params = new URLSearchParams({ startDate: historyStartDate, endDate: historyEndDate });
+      const payload = await requestJson(`/api/nodes?${params}`);
+      if (requestId !== nodeHistoryRequestId) return false;
+      SENSOR_NODES = validateNodes(payload);
+    } else {
+      const payload = await requestJson('/api/nodes');
+      const currentNodes = validateNodes(payload);
+      if (requestId !== nodeHistoryRequestId) return false;
+
+      if (allHistoryLoaded) {
+        const cachedNodes = new Map(allHistoryNodes.map((node) => [node.key, node]));
+        SENSOR_NODES = currentNodes.map((node) => {
+          const cachedReadings = cachedNodes.get(node.key)?.dateReadings || [];
+          return { ...node, dateReadings: mergeReadings(cachedReadings, node.recentReadings || []) };
+        });
+        allHistoryNodes = SENSOR_NODES;
+      } else {
+        const range = await requestJson('/api/nodes/date-range');
+        if (requestId !== nodeHistoryRequestId) return false;
+        const isValidDate = (value) => {
+          if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+          const date = new Date(`${value}T00:00:00Z`);
+          return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+        };
+        if (range.startDate === null && range.endDate === null) {
+          allHistoryStartDate = null;
+          SENSOR_NODES = currentNodes;
+          allHistoryLoaded = false;
+        } else {
+          if (!isValidDate(range.startDate) || !isValidDate(range.endDate) || range.startDate > range.endDate) {
+            throw new Error('The sensor database returned an invalid full-history date range.');
+          }
+          allHistoryStartDate = range.startDate;
+          const dateRanges = [];
+          for (let cursor = range.startDate; cursor <= range.endDate;) {
+            const chunkEnd = new Date(`${cursor}T00:00:00Z`);
+            chunkEnd.setUTCDate(chunkEnd.getUTCDate() + 29);
+            const end = chunkEnd.toISOString().slice(0, 10);
+            const rangeEnd = end < range.endDate ? end : range.endDate;
+            dateRanges.push([cursor, rangeEnd]);
+            const nextDate = new Date(`${rangeEnd}T00:00:00Z`);
+            nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+            cursor = nextDate.toISOString().slice(0, 10);
+          }
+          const nodesByKey = new Map(currentNodes.map((node) => [node.key, { ...node, dateReadings: [] }]));
+          for (let offset = 0; offset < dateRanges.length; offset += 4) {
+            const batch = await Promise.all(dateRanges.slice(offset, offset + 4).map(([startDate, endDate]) => {
+              const params = new URLSearchParams({ startDate, endDate });
+              return requestJson(`/api/nodes?${params}`);
+            }));
+            if (requestId !== nodeHistoryRequestId) return false;
+            batch.forEach((rangePayload) => {
+              validateNodes(rangePayload).forEach((node) => {
+                if (!nodesByKey.has(node.key)) nodesByKey.set(node.key, { ...node, dateReadings: [] });
+                nodesByKey.get(node.key).dateReadings.push(...(node.dateReadings || []));
+              });
+            });
+          }
+          SENSOR_NODES = [...nodesByKey.values()].map((node) => ({
+            ...node,
+            dateReadings: mergeReadings(node.dateReadings, node.recentReadings || [])
+          }));
+          allHistoryLoaded = true;
+        }
+        allHistoryNodes = SENSOR_NODES;
+      }
     }
-    SENSOR_NODES = payload.nodes;
     databaseConnected = true;
     indexSensorNodes();
     return true;
@@ -209,6 +288,12 @@
     return `${values.year}-${values.month}-${values.day}`;
   }
 
+  function offsetManilaDate(value, days) {
+    const date = new Date(`${value}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
   function sensorTimestamp(value) {
     if (typeof value !== 'string') return NaN;
     const timestamp = Date.parse(/[zZ]|[+-]\d{2}:\d{2}$/.test(value) ? value : `${value}+08:00`);
@@ -229,6 +314,14 @@
   }
 
   function heatIndexDateRange(startDate, endDate) {
+    if (!startDate || !endDate) {
+      return {
+        start: allHistoryStartDate
+          ? Date.parse(`${allHistoryStartDate}T00:00:00+08:00`)
+          : 0,
+        end: Date.now()
+      };
+    }
     const start = Date.parse(`${startDate}T00:00:00+08:00`);
     const dayEnd = Date.parse(`${endDate}T00:00:00+08:00`) + 24 * 60 * 60 * 1000;
     const end = Math.min(Date.now(), dayEnd);
@@ -325,7 +418,7 @@
 
   function getDateAwareReadings(node) {
     if (Array.isArray(node.dateReadings)) return node.dateReadings;
-    if (heatIndexEndDate !== manilaDateString(new Date())) return [];
+    if (heatIndexStartDate && heatIndexEndDate !== manilaDateString(new Date())) return [];
     return Array.isArray(node.recentReadings) ? node.recentReadings : [];
   }
 
@@ -346,6 +439,7 @@
   }
 
   function selectedHeatIndexDateRangeLabel() {
+    if (!heatIndexStartDate || !heatIndexEndDate) return 'all time';
     const formatDate = (value) => new Intl.DateTimeFormat('en-US', {
       timeZone: 'Asia/Manila',
       year: 'numeric',
@@ -769,7 +863,8 @@
     // ── Build timestamped per-node series for the selected range ─
     const { start: rangeStart, end: rangeEnd } =
       heatIndexDateRange(heatIndexStartDate, heatIndexEndDate);
-    const includesMultipleDates = heatIndexStartDate !== heatIndexEndDate;
+    const includesMultipleDates = !heatIndexStartDate || !heatIndexEndDate ||
+      heatIndexStartDate !== heatIndexEndDate;
     const formatTime = (timestamp) => new Intl.DateTimeFormat('en-PH', includesMultipleDates ? {
       month: 'short',
       day: 'numeric',
@@ -1136,6 +1231,32 @@
       renderHeatLocationPage(1, heatLocationPageSize);
     });
     const historyResetButton = document.getElementById('hi-history-reset');
+    const historyQuickRange = document.getElementById('hi-history-quick-range');
+    let telemetryDateFilter = null;
+    if (historyQuickRange) historyQuickRange.disabled = true;
+    const today = manilaDateString(new Date());
+    const quickRanges = {
+      today: [today, today],
+      yesterday: [offsetManilaDate(today, -1), offsetManilaDate(today, -1)],
+      '7-days': [offsetManilaDate(today, -6), today],
+      '30-days': [offsetManilaDate(today, -29), today]
+    };
+    const matchingQuickRange = Object.entries(quickRanges)
+      .find(([, range]) => range[0] === heatIndexStartDate && range[1] === heatIndexEndDate);
+    if (historyQuickRange) {
+      historyQuickRange.value = matchingQuickRange
+        ? matchingQuickRange[0]
+        : heatIndexStartDate && heatIndexEndDate ? 'custom' : 'all-time';
+    }
+    historyQuickRange?.addEventListener('change', () => {
+      if (historyQuickRange.value === 'all-time') {
+        telemetryDateFilter?.setRange(null, null);
+        return;
+      }
+      if (historyQuickRange.value === 'custom') return;
+      const range = quickRanges[historyQuickRange.value];
+      if (range) telemetryDateFilter?.setRange(range[0], range[1]);
+    });
     const historyExportButton = document.getElementById('hi-history-export');
     const historyExportMenu = document.getElementById('hi-history-export-options');
     historyExportButton?.addEventListener('click', () => {
@@ -1192,15 +1313,28 @@
       window.OrchidComponentLoader.initDateRangeFilter(dateFilterMount, {
         initialStartDate: heatIndexStartDate,
         initialEndDate: heatIndexEndDate,
+        allowEmptyRange: true,
         onChange: async (startDate, endDate) => {
           const dateRangeChanged =
             startDate !== heatIndexStartDate || endDate !== heatIndexEndDate;
           heatIndexStartDate = startDate;
           heatIndexEndDate = endDate;
+          if (historyQuickRange) {
+            const matchingRange = Object.entries(quickRanges)
+              .find(([, range]) => range[0] === startDate && range[1] === endDate);
+            historyQuickRange.value = !startDate || !endDate
+              ? 'all-time'
+              : matchingRange ? matchingRange[0] : 'custom';
+          }
           updateTelemetryHistoryHeading();
           const url = new URL(window.location.href);
-          url.searchParams.set('startDate', startDate);
-          url.searchParams.set('endDate', endDate);
+          if (startDate && endDate) {
+            url.searchParams.set('startDate', startDate);
+            url.searchParams.set('endDate', endDate);
+          } else {
+            url.searchParams.delete('startDate');
+            url.searchParams.delete('endDate');
+          }
           url.searchParams.delete('date');
           url.searchParams.delete('interval');
           window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
@@ -1224,14 +1358,15 @@
           renderHeatIndexPage(currentHeatIndexNodes, currentHeatIndexReadings);
         }
       }).then((dateFilter) => {
+        telemetryDateFilter = dateFilter;
+        if (historyQuickRange) historyQuickRange.disabled = false;
         historyResetButton?.addEventListener('click', () => {
           heatLocationSearchQuery = '';
           heatLocationStatusFilter = 'all';
           if (historySearch) historySearch.value = '';
           if (historyStatusFilter) historyStatusFilter.value = 'all';
           heatLocationPagination?.setTotal(getFilteredHeatLocationRows().length);
-          const today = manilaDateString(new Date());
-          dateFilter.setRange(today, today);
+          dateFilter.setRange(null, null);
           renderHeatLocationPage(1, heatLocationPageSize);
         });
       }).catch((error) => {
