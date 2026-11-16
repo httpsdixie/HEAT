@@ -562,6 +562,126 @@
     }
   }
 
+  function nodeExportColumns() {
+    return [
+      ['Node ID',       (s) => s.id],
+      ['Node Name',     (s) => s.location],
+      ['Status',        (s) => s.status],
+      ['Deployment',    (s) => s.unplaced ? 'Unplaced' : 'Deployed'],
+      ['Last Reported', lastSeenDisplay],
+      ['Battery',       (s) => s.battery],
+      ['Up Time',       (s) => s.uptime],
+      ['Sensor Status', (s) => s.sensorStatus],
+      ['Temperature',   (s) => s.temperature],
+      ['Humidity',      (s) => s.humidity],
+      ['Pressure',      (s) => s.pressure],
+      ['Heat Index',    (s) => s.heatIndex],
+      ['Weather',       (s) => s.weather],
+    ];
+  }
+
+  function nodeReadingColumns() {
+    return [
+      ['Timestamp',       (r) => r.createdAt ? new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Manila', year: 'numeric', month: 'short', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+      }).format(new Date(r.createdAt)) + ' PHT' : '—'],
+      ['Temperature (°C)', (r) => r.temperature ?? ''],
+      ['Humidity (%)',     (r) => r.humidity ?? ''],
+      ['Pressure (hPa)',   (r) => r.pressure ?? ''],
+      ['Heat Index (°C)',  (r) => r.heatIndex ?? ''],
+      ['Battery (mV)',     (r) => r.battery ?? ''],
+    ];
+  }
+
+  function exportNodeCsv() {
+    const sensor = inspectedSensor;
+    if (!sensor) return;
+    const escapeCsv = (value) => {
+      const text = value == null || value === '--' ? '' : String(value);
+      return `"${text.replace(/"/g, '""')}"`;
+    };
+    const summaryCols = nodeExportColumns();
+    const readingCols = nodeReadingColumns();
+    const summaryHeader = summaryCols.map(([h]) => escapeCsv(h)).join(',');
+    const summaryRow = summaryCols.map(([, fn]) => escapeCsv(fn(sensor))).join(',');
+    const readingsHeader = readingCols.map(([h]) => escapeCsv(h)).join(',');
+    const readingRows = [...sensor.recentReadings]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .map((r) => readingCols.map(([, fn]) => escapeCsv(fn(r))).join(','));
+    const csv = [
+      'SENSOR SUMMARY',
+      summaryHeader,
+      summaryRow,
+      '',
+      'RECENT READINGS',
+      readingsHeader,
+      ...readingRows,
+    ].join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `orchid-node-${sensor.id}.csv`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function exportNodePdf() {
+    const sensor = inspectedSensor;
+    if (!sensor) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      window.OrchidToast.show({
+        variant: 'error',
+        title: 'Export blocked',
+        message: 'Allow pop-ups to open the printable PDF report.'
+      });
+      return;
+    }
+    const escapeHtml = (value) => String(value == null || value === '--' ? '—' : value)
+      .replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+    const summaryCols = nodeExportColumns();
+    const readingCols = nodeReadingColumns();
+    const summaryHead = summaryCols.map(([h]) => `<th>${escapeHtml(h)}</th>`).join('');
+    const summaryRow  = `<tr>${summaryCols.map(([, fn]) => `<td>${escapeHtml(fn(sensor))}</td>`).join('')}</tr>`;
+    const readingsHead = readingCols.map(([h]) => `<th>${escapeHtml(h)}</th>`).join('');
+    const readingRows = [...sensor.recentReadings]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .map((r) => `<tr>${readingCols.map(([, fn]) => `<td>${escapeHtml(fn(r))}</td>`).join('')}</tr>`)
+      .join('');
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ORCHID Node ${escapeHtml(sensor.id)} — Sensor Report</title>
+  <style>
+    @page { size: landscape; margin: 12mm; }
+    body { color: #18202b; font: 10px Arial, sans-serif; }
+    h1 { margin: 0 0 2px; font-size: 18px; }
+    h2 { margin: 14px 0 4px; font-size: 12px; color: #334155; }
+    p  { margin: 0 0 12px; color: #566170; font-size: 9px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th, td { padding: 5px 6px; border: 1px solid #cbd2dc; text-align: left; }
+    th { background: #e8eef6; font-size: 9px; }
+    tr { break-inside: avoid; }
+    @media screen { body { margin: 24px; } }
+  </style>
+</head>
+<body>
+  <h1>Node ${escapeHtml(sensor.id)} — Sensor Report</h1>
+  <p>Exported ${escapeHtml(new Date().toLocaleString())}</p>
+  <h2>Summary</h2>
+  <table><thead><tr>${summaryHead}</tr></thead><tbody>${summaryRow}</tbody></table>
+  <h2>Recent Readings (${sensor.recentReadings.length})</h2>
+  <table><thead><tr>${readingsHead}</tr></thead><tbody>${readingRows}</tbody></table>
+  <script>window.addEventListener('load', () => window.print());</script>
+</body>
+</html>`);
+    printWindow.document.close();
+  }
+
   function fleetExportColumns() {
     return [
       ['Node ID', (sensor) => sensor.id],
@@ -813,6 +933,13 @@
   }
 
   function resetInspector() {
+    const nodeExportBtn = document.getElementById('sensor-node-export-btn');
+    if (nodeExportBtn) {
+      nodeExportBtn.disabled = true;
+      nodeExportBtn.setAttribute('aria-expanded', 'false');
+      const menu = document.getElementById('sensor-node-export-options');
+      if (menu) menu.hidden = true;
+    }
     const values = {
       'sn-node-id-badge': '—',
       'sn-status-badge': 'No Data',
@@ -859,6 +986,8 @@
 
   function populateInspector(sensor) {
     inspectedSensor = sensor;
+    const nodeExportBtn = document.getElementById('sensor-node-export-btn');
+    if (nodeExportBtn) nodeExportBtn.disabled = false;
     const isOnline = sensor.status === 'Online';
 
     // Node identity
@@ -1246,6 +1375,45 @@
   async function initNodeInspector() {
     const mountEl = document.getElementById('sensor-node-search-mount');
     if (!mountEl) return;
+
+    // ── Per-node export button ────────────────────────────────────
+    const nodeExportBtn  = document.getElementById('sensor-node-export-btn');
+    const nodeExportMenu = document.getElementById('sensor-node-export-options');
+    if (nodeExportBtn && nodeExportMenu) {
+      nodeExportBtn.addEventListener('click', () => {
+        const isOpen = nodeExportBtn.getAttribute('aria-expanded') === 'true';
+        nodeExportBtn.setAttribute('aria-expanded', String(!isOpen));
+        nodeExportMenu.hidden = isOpen;
+      });
+      nodeExportMenu.addEventListener('click', (event) => {
+        const item = event.target.closest('[data-node-export-format]');
+        if (!item) return;
+        nodeExportMenu.hidden = true;
+        nodeExportBtn.setAttribute('aria-expanded', 'false');
+        if (item.dataset.nodeExportFormat === 'csv') exportNodeCsv();
+        else if (item.dataset.nodeExportFormat === 'pdf') exportNodePdf();
+      });
+      nodeExportMenu.addEventListener('keydown', (event) => {
+        const items = Array.from(nodeExportMenu.querySelectorAll('[role="menuitem"]'));
+        const currentIndex = items.indexOf(document.activeElement);
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          const direction = event.key === 'ArrowDown' ? 1 : -1;
+          items[(currentIndex + direction + items.length) % items.length]?.focus();
+        } else if (event.key === 'Escape') {
+          nodeExportMenu.hidden = true;
+          nodeExportBtn.setAttribute('aria-expanded', 'false');
+          nodeExportBtn.focus();
+        }
+      });
+      document.addEventListener('click', (event) => {
+        if (!nodeExportBtn.contains(event.target) && !nodeExportMenu.contains(event.target)) {
+          nodeExportMenu.hidden = true;
+          nodeExportBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+    // ─────────────────────────────────────────────────────────────
 
     const listView = document.getElementById('sensor-list-view');
     if (allSensors.length === 0) resetInspector();

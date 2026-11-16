@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="About ORCHID — the team behind the Heat Index Monitoring System." />
+  <title>ORCHID | About</title>
+  <link rel="icon" href="../assets/ORCHID_Logo.png" />
+  <link rel="stylesheet" href="../css/theme.css?v=ormoc-navy-5" />
+  <link rel="stylesheet" href="../css/layout.css?v=profile-settings-3" />
+  <link rel="stylesheet" href="../css/privacy.css?v=3" />
+  <style>
+    .about-logo {
+      display: block;
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      margin: 0 auto 20px;
+    }
+
+    .about-system-name {
+      margin: 0 0 4px;
+      color: var(--text-white);
+      font-size: clamp(1.5rem, 3vw, 1.9rem);
+      text-align: center;
+    }
+
+    .about-tagline {
+      display: block;
+      color: var(--color-accent-light);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .about-desc {
+      max-width: 440px;
+      margin: 0 auto 28px;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.65;
+      text-align: center;
+    }
+
+    .about-divider {
+      height: 1px;
+      background: var(--border-soft);
+      margin: 0 0 24px;
+    }
+
+    .about-team-label {
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-accent-light);
+      margin: 0 0 16px;
+      text-align: center;
+    }
+
+    .about-team {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .about-member {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-elevated);
+    }
+
+    .about-member-avatar {
+      display: grid;
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--bg-icon-accent);
+      border: 1px solid var(--border-accent);
+      color: var(--color-accent-light);
+    }
+
+    .about-member-avatar svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .about-member-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .about-member-name {
+      color: var(--text-white);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .about-member-role {
+      color: var(--text-muted);
+      font-size: var(--font-size-xs);
+    }
+
+    .about-member-tag {
+      margin-left: auto;
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 0.65rem;
+      font-weight: var(--font-weight-bold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .about-member-tag--iot {
+      background: rgba(var(--color-cyan-rgb), 0.15);
+      color: var(--color-cyan);
+      border: 1px solid rgba(var(--color-cyan-rgb), 0.3);
+    }
+
+    .about-member-tag--web {
+      background: rgba(var(--color-accent-light-rgb), 0.15);
+      color: var(--color-accent-light);
+      border: 1px solid rgba(var(--color-accent-light-rgb), 0.3);
+    }
+
+    .about-member-tag--docs {
+      background: rgba(var(--color-green-rgb), 0.15);
+      color: var(--color-green);
+      border: 1px solid rgba(var(--color-green-rgb), 0.3);
+    }
+
+    .about-footer-note {
+      margin-top: 24px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-mount" class="sidebar-slot"></div>
+    <div class="main-wrapper">
+      <div id="header-mount" class="header-slot"></div>
+      <main class="privacy-viewport" id="about-page">
+        <section class="privacy-card" aria-labelledby="about-title">
+
+          <img src="../assets/ORCHID_Logo.png" class="about-logo" alt="ORCHID Logo" />
+
+          <h2 class="about-system-name" id="about-title">ORCHID</h2>
+          <span class="about-tagline">Ormoc City Heat Index Device</span>
+
+          <p class="about-desc">
+            ORCHID is a real-time environmental heat index monitoring system developed for the City Government of Ormoc. It collects temperature, humidity, pressure, and heat index readings from deployed sensor nodes across the city to support public health advisories and climate analysis.
+          </p>
+
+          <div class="about-divider"></div>
+
+          <p class="about-team-label">Development Team</p>
+
+          <div class="about-team">
+            <div class="about-member">
+              <div class="about-member-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </div>
+              <div class="about-member-info">
+                <span class="about-member-name">Dixie</span>
+                <span class="about-member-role">Web Developer</span>
+              </div>
+              <span class="about-member-tag about-member-tag--web">Web Dev</span>
+            </div>
+
+            <div class="about-member">
+              <div class="about-member-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </div>
+              <div class="about-member-info">
+                <span class="about-member-name">Team Member 2</span>
+                <span class="about-member-role">IoT Engineer</span>
+              </div>
+              <span class="about-member-tag about-member-tag--iot">IoT</span>
+            </div>
+
+            <div class="about-member">
+              <div class="about-member-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </div>
+              <div class="about-member-info">
+                <span class="about-member-name">Team Member 3</span>
+                <span class="about-member-role">Documentation</span>
+              </div>
+              <span class="about-member-tag about-member-tag--docs">Docs</span>
+            </div>
+          </div>
+
+          <p class="about-footer-note">
+            Developed as a capstone project · <span id="about-year"></span>
+          </p>
+
+        </section>
+      </main>
+    </div>
+  </div>
+  <div id="toast-mount"></div>
+  <div id="modal-mount"></div>
+  <script src="../components/components.js?v=54"></script>
+  <script>document.getElementById('about-year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

@@ -2022,6 +2022,70 @@ window.OrchidComponentLoader = {
         });
       });
     }
+
+    const aboutBtn = document.getElementById('btn-about');
+    if (aboutBtn) {
+      aboutBtn.addEventListener('click', () => {
+        window.OrchidModal.open({
+          title: 'About ORCHID',
+          wide: true,
+          hideFooter: true,
+          bodyHtml: `
+            <div style="text-align:center;padding:8px 0 20px;">
+              <img src="/assets/ORCHID_Logo.png" alt="ORCHID Logo"
+                   style="width:68px;height:68px;object-fit:contain;margin:0 auto 16px;display:block;" />
+              <h3 style="margin:0 0 4px;color:var(--text-white);font-size:1.3rem;">ORCHID</h3>
+              <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-light);margin:0 0 16px;">
+                Ormoc City Heat Index Device
+              </p>
+              <p style="color:var(--text-secondary);font-size:0.87rem;line-height:1.65;max-width:420px;margin:0 auto 24px;">
+                ORCHID is a real-time environmental heat index monitoring system developed for the City Government of Ormoc. It collects temperature, humidity, pressure, and heat index readings from deployed sensor nodes to support public health advisories and climate analysis.
+              </p>
+              <div style="height:1px;background:var(--border-soft);margin:0 0 20px;"></div>
+              <p style="font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent-light);margin:0 0 14px;">
+                Development Team
+              </p>
+              <p style="color:var(--text-muted);font-size:0.75rem;margin:0 0 16px;">Eastern Visayas State University — Ormoc Campus</p>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;">
+                <div style="padding:16px 12px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-surface-elevated);display:flex;flex-direction:column;align-items:center;gap:10px;">
+                  <div style="width:72px;height:72px;border-radius:50%;border:2px solid var(--border-accent);overflow:hidden;flex-shrink:0;">
+                    <img src="/assets/Dixie.jpg" alt="" style="width:100%;height:100%;object-fit:cover;" />
+                  </div>
+                  <div>
+                    <div style="color:var(--text-white);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);line-height:1.3;">Dixie Shannr L. Perida</div>
+                    <div style="margin-top:4px;padding:2px 8px;display:inline-block;border-radius:var(--radius-pill);font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:rgba(var(--color-accent-light-rgb),0.15);color:var(--color-accent-light);border:1px solid rgba(var(--color-accent-light-rgb),0.3);">Web Dev</div>
+                    <div style="margin-top:8px;color:var(--text-muted);font-size:0.75rem;line-height:1.5;">Designed and built the full web dashboard, telemetry pages, and backend API server.</div>
+                  </div>
+                </div>
+                <div style="padding:16px 12px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-surface-elevated);display:flex;flex-direction:column;align-items:center;gap:10px;">
+                  <div style="width:72px;height:72px;border-radius:50%;border:2px solid var(--border-accent);overflow:hidden;flex-shrink:0;">
+                    <img src="/assets/Jonathan.jpg" alt="" style="width:100%;height:100%;object-fit:cover;" />
+                  </div>
+                  <div>
+                    <div style="color:var(--text-white);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);line-height:1.3;">Jonathan Ababat Labiste Jr.</div>
+                    <div style="margin-top:4px;padding:2px 8px;display:inline-block;border-radius:var(--radius-pill);font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:rgba(var(--color-cyan-rgb),0.15);color:var(--color-cyan);border:1px solid rgba(var(--color-cyan-rgb),0.3);">Hardware</div>
+                    <div style="margin-top:8px;color:var(--text-muted);font-size:0.75rem;line-height:1.5;">Engineered the sensor nodes — hardware design, firmware, and LoRa wireless communication.</div>
+                  </div>
+                </div>
+                <div style="padding:16px 12px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--bg-surface-elevated);display:flex;flex-direction:column;align-items:center;gap:10px;">
+                  <div style="width:72px;height:72px;border-radius:50%;border:2px solid var(--border-accent);overflow:hidden;flex-shrink:0;">
+                    <img src="/assets/Mildred.jpg" alt="" style="width:100%;height:100%;object-fit:cover;" />
+                  </div>
+                  <div>
+                    <div style="color:var(--text-white);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);line-height:1.3;">Mildred Lacbayo</div>
+                    <div style="margin-top:4px;padding:2px 8px;display:inline-block;border-radius:var(--radius-pill);font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:rgba(var(--color-green-rgb),0.15);color:var(--color-green);border:1px solid rgba(var(--color-green-rgb),0.3);">Docs</div>
+                    <div style="margin-top:8px;color:var(--text-muted);font-size:0.75rem;line-height:1.5;">Handled system documentation, research papers, and contributed to UI design.</div>
+                  </div>
+                </div>
+              </div>
+              <p style="margin-top:20px;color:var(--text-muted);font-size:0.72rem;">
+                Developed as a capstone project · ${new Date().getFullYear()}
+              </p>
+            </div>`
+        });
+      });
+    }
+
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
       const label = item.querySelector('span')?.textContent.trim();

@@ -144,6 +144,20 @@
 
               <div class="sensor-inspector-group">
                 <div id="sensor-node-search-mount"></div>
+                <div class="sensor-node-export-menu" id="sensor-node-export-menu">
+                  <button class="sensor-tool-button" id="sensor-node-export-btn" type="button"
+                          aria-label="Export this sensor" title="Export this sensor"
+                          aria-haspopup="menu" aria-expanded="false" aria-controls="sensor-node-export-options" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <path d="m7 10 5 5 5-5M12 15V3"/>
+                    </svg>
+                  </button>
+                  <div id="sensor-node-export-options" class="sensor-export-options" role="menu" aria-label="Export sensor format" hidden>
+                    <button type="button" role="menuitem" data-node-export-format="csv">Export as CSV</button>
+                    <button type="button" role="menuitem" data-node-export-format="pdf">Export as PDF</button>
+                  </div>
+                </div>
                 <div class="sensor-list-tools" aria-label="Sensor device tools">
                   <label class="sensor-filter-control">
                     <span class="sensor-filter-label">Status</span>
@@ -696,7 +710,8 @@
       min-width: 150px;
     }
 
-    .sensor-export-menu {
+    .sensor-export-menu,
+    .sensor-node-export-menu {
       position: relative;
     }
 

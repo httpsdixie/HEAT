@@ -283,6 +283,14 @@
   text-decoration: underline;
 }
 
+.footer-link--btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
 /* ── Header Component ── */
 .header {
   width: 100%;
