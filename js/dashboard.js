@@ -2185,6 +2185,7 @@
       mapLocationSelect.querySelector('option[data-dynamic]')?.remove();
       mapLocationSelect._orchidDropdownSync?.();
       locationInput.value = '';
+      window.orchidPlacementInProgress = false;
       updateButtons();
     };
     const setDraftPin = (latitude, longitude, label = '') => {
@@ -2220,6 +2221,7 @@
       mapLocationSelect.value = '';
       locationInput.value = chosenNode()?.location || '';
       placementMode = Boolean(activeNodeKey);
+      window.orchidPlacementInProgress = placementMode;
       map.getContainer().style.cursor = placementMode ? 'crosshair' : '';
       if (placementMode) {
         setStatus('Choose a named place below, or click the map to place the pin manually.');
@@ -2251,6 +2253,7 @@
       mapLocationSelect.value = '';
       locationInput.value = node.location || '';
       placementMode = true;
+      window.orchidPlacementInProgress = true;
       map.getContainer().style.cursor = 'crosshair';
       setStatus(`Move ${node.id}: choose a named place or click the map to select its new location.`);
       updateButtons();

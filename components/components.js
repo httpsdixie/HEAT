@@ -2104,6 +2104,11 @@ window.OrchidComponentLoader = {
     let autoSyncCount = 0;
     const dispatchDataRefresh = () => {
       if (refreshInProgress) return;
+      // Pause auto-refresh if the map placement panel has an unsaved draft
+      if (window.orchidPlacementInProgress) {
+        nextRefreshAt = Date.now() + refreshIntervalMs;
+        return;
+      }
       refreshInProgress = true;
       autoSyncCount++;
       nextRefreshAt = Date.now() + refreshIntervalMs;
@@ -2112,6 +2117,11 @@ window.OrchidComponentLoader = {
 
     const renderCountdown = () => {
       if (!syncEl) return;
+      if (window.orchidPlacementInProgress) {
+        syncEl.innerHTML = `Auto-refresh <strong>paused</strong>`;
+        nextRefreshAt = Date.now() + refreshIntervalMs;
+        return;
+      }
       const secondsUntilRefresh = Math.max(0, Math.ceil((nextRefreshAt - Date.now()) / 1000));
       const minutes = Math.floor(secondsUntilRefresh / 60).toString().padStart(2, '0');
       const seconds = (secondsUntilRefresh % 60).toString().padStart(2, '0');

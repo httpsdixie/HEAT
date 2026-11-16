@@ -760,10 +760,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 for nrow in node_id_rows:
                     recent_parts.append(f"""
                         SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, {heat_index_expression}
-                        FROM readings
-                        WHERE node_id = ?
-                        ORDER BY id DESC
-                        LIMIT 120
+                        FROM (
+                            SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, {heat_index_expression}
+                            FROM readings
+                            WHERE node_id = ?
+                            ORDER BY id DESC
+                            LIMIT 120
+                        )
                     """)
                     recent_params.append(nrow["node_id"])
                 if recent_parts:
