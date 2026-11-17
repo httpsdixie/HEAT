@@ -52,7 +52,7 @@
   let allRows = [];
   let sensorDataLoadError = false;
   const fleetPageSize = 3;
-  const activityPageSize = 6;
+  let activityPageSize = 6;
   let fleetPagination = null;
   let selectedFleetNodeKey = null;
   let showFleetNode = null;
@@ -1461,6 +1461,26 @@
     await renderSensorList();
     initViewToggle();
     initBatteryHistoryToggle();
+
+    // Dynamically resize activity page size when the table wrap changes height
+    const activityTableWrap = document.querySelector('.sensor-activity-view .sensor-table-wrap');
+    const activityTableHeader = document.querySelector('.sensor-activity-view .sensor-table thead');
+    if (activityTableWrap && 'ResizeObserver' in window) {
+      let activityResizeTimer = null;
+      new ResizeObserver(() => {
+        clearTimeout(activityResizeTimer);
+        activityResizeTimer = setTimeout(() => {
+          const headerH = activityTableHeader ? activityTableHeader.getBoundingClientRect().height : 44;
+          const rowH = 46;
+          const available = activityTableWrap.clientHeight - headerH - 2;
+          const newSize = Math.max(5, Math.floor(available / rowH));
+          if (newSize !== activityPageSize) {
+            activityPageSize = newSize;
+            renderSensorActivity(1);
+          }
+        }, 120);
+      }).observe(activityTableWrap);
+    }
     await initNodeInspector();
     if (requestedNodeId) {
       const requestedNode = allSensors.find((sensor) => sensor.id === requestedNodeId);
