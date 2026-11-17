@@ -158,6 +158,7 @@
                     <button type="button" role="menuitem" data-node-export-format="pdf">Export as PDF</button>
                   </div>
                 </div>
+
                 <div class="sensor-list-tools" aria-label="Sensor device tools">
                   <label class="sensor-filter-control">
                     <span class="sensor-filter-label">Status</span>
@@ -651,6 +652,14 @@
 
     .sensor-control-tabs.show-all-sensors + .sensor-inspector-group .sensor-list-tools {
       display: flex;
+    }
+
+    .sensor-node-export-menu {
+      display: none;
+    }
+
+    .sensor-control-tabs.show-overview + .sensor-inspector-group .sensor-node-export-menu {
+      display: block;
     }
 
     .sensor-control-tabs.show-activity + .sensor-inspector-group {

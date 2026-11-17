@@ -109,7 +109,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
   flex: 0 0 auto;
   padding: 4px 8px;
@@ -518,16 +517,26 @@
   display: contents;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-tools {
+.hi-analysis-control-card.show-locations .orchid-date-filter,
+.hi-analysis-control-card.show-locations .hi-history-tools,
+.hi-analysis-control-card.show-locations .hi-telemetry-date-tools {
   display: contents;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-status-filter:not(.hi-history-quick-range) {
+.hi-analysis-control-card.show-locations .hi-history-quick-range {
   order: 1;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-export-menu {
+.hi-analysis-control-card.show-locations .odf-date-field {
+  order: 2;
+}
+
+.hi-analysis-control-card.show-locations .hi-history-status-filter {
   order: 3;
+}
+
+.hi-analysis-control-card.show-locations .hi-history-export-menu {
+  order: 4;
 }
 
 .hi-analysis-control-card.show-locations .hi-history-export {
