@@ -65,8 +65,14 @@ def find_serial_port():
     for i, p in enumerate(ports):
         print(f"  [{i}] {p.device} — {p.description}")
 
-    # Prefer ttyACM / ttyUSB ports (actual USB devices, not virtual COM ports)
-    usb_ports = [p for p in ports if any(k in p.device for k in ['ttyACM', 'ttyUSB'])]
+    # Prefer USB serial devices on Windows and ttyACM / ttyUSB devices on Linux.
+    usb_ports = [
+        p for p in ports
+        if any(k in p.device.lower() for k in ['ttyacm', 'ttyusb'])
+        or any(k in (p.description or '').lower() for k in [
+            'cp210', 'ch340', 'usb serial', 'jtag', 'esp32', 'heltec', 'tinyusb', 'cdc'
+        ])
+    ]
 
     # Among USB ports, prefer known ESP32 chip descriptions
     for p in usb_ports:

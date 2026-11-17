@@ -13,7 +13,7 @@ if errorlevel 2 exit /b 0
 if errorlevel 1 goto run_demo
 
 :run_real
-start "ORCHID serial logger" /min cmd /c "cd /d ""%~dp0DB"" && call run.bat"
+start "ORCHID serial logger" /b cmd /c "cd /d ""%~dp0DB"" && call run.bat"
 call :run_server %*
 exit /b %errorlevel%
 
