@@ -517,7 +517,11 @@
   display: contents;
 }
 
-.hi-analysis-control-card.show-locations .orchid-date-filter,
+.hi-analysis-control-card.show-locations .hi-tab-bar {
+  width: auto;
+  flex-shrink: 0;
+}
+
 .hi-analysis-control-card.show-locations .hi-history-tools,
 .hi-analysis-control-card.show-locations .hi-telemetry-date-tools {
   display: contents;
@@ -527,24 +531,21 @@
   order: 1;
 }
 
-.hi-analysis-control-card.show-locations .odf-date-field {
-  order: 2;
-}
-
 .hi-analysis-control-card.show-locations .hi-history-search {
-  order: 3;
+  order: 2;
+  width: min(160px, 15vw);
 }
 
 .hi-analysis-control-card.show-locations .hi-history-status-filter:not(.hi-history-quick-range) {
-  order: 4;
+  order: 3;
 }
 
 .hi-analysis-control-card.show-locations .hi-history-reset {
-  order: 5;
+  order: 4;
 }
 
 .hi-analysis-control-card.show-locations .hi-history-export-menu {
-  order: 6;
+  order: 5;
 }
 
 .hi-analysis-control-card.show-locations .hi-history-export {
