@@ -831,12 +831,12 @@ window.OrchidComponentLoader = {
         }
 
         const heatIndex = getHeatIndex(node);
-        if (heatIndex !== null && heatIndex >= 32) {
+        if (heatIndex !== null && heatIndex >= 33) {
           alerts.push({
             category: 'heat',
             nodeId,
-            severity: heatIndex >= 41 ? 'critical' : 'warning',
-            title: heatIndex >= 41 ? 'Dangerous heat index' : 'High heat index',
+            severity: heatIndex >= 42 ? 'critical' : 'warning',
+            title: heatIndex >= 42 ? 'Dangerous heat index' : 'High heat index',
             message: `${label} heat index is ${heatIndex.toFixed(1)}°C.`
           });
         }
@@ -1434,7 +1434,8 @@ window.OrchidComponentLoader = {
    *
    * @param {Element} mountEl — container element to append pagination into
    * @param {object} options — { total, pageSize, page, onChange }
-   * @returns {object} API — { setTotal, setPage, getPage, getPageSize }
+   * @returns {object} API — { setTotal, setPageSize, setPage, getPage, getPageSize }
+   * setTotal accepts { preservePage: true } to keep the current page when totals change.
    */
   async initPagination(mountEl, options = {}) {
     if (!mountEl) return null;
@@ -1534,10 +1535,20 @@ window.OrchidComponentLoader = {
 
     // Public API
     return {
-      setTotal(newTotal) {
+      setTotal(newTotal, { preservePage = false } = {}) {
         total = newTotal;
-        page  = 1;
+        page  = preservePage ? Math.min(page, totalPages()) : 1;
         render();
+      },
+      setPageSize(newPageSize) {
+        const nextPageSize = Math.floor(Number(newPageSize));
+        if (!Number.isFinite(nextPageSize) || nextPageSize < 1) {
+          throw new RangeError('Pagination page size must be a positive number.');
+        }
+        pageSize = nextPageSize;
+        page = 1;
+        render();
+        onChange(page, pageSize);
       },
       setPage(p) { goTo(p); },
       getPage()     { return page; },
@@ -2073,7 +2084,7 @@ window.OrchidComponentLoader = {
                   </div>
                   <div>
                     <div style="color:var(--text-white);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);line-height:1.3;">Mildred Lacbayo</div>
-                    <div style="margin-top:4px;padding:2px 8px;display:inline-block;border-radius:var(--radius-pill);font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:rgba(var(--color-green-rgb),0.15);color:var(--color-green);border:1px solid rgba(var(--color-green-rgb),0.3);">Docs</div>
+                    <div style="margin-top:4px;padding:2px 8px;display:inline-block;border-radius:var(--radius-pill);font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:rgba(var(--color-green-rgb),0.15);color:var(--color-green);border:1px solid rgba(var(--color-green-rgb),0.3);">Documentation</div>
                     <div style="margin-top:8px;color:var(--text-muted);font-size:0.75rem;line-height:1.5;">Handled system documentation, research papers, and contributed to UI design.</div>
                   </div>
                 </div>
@@ -2085,7 +2096,7 @@ window.OrchidComponentLoader = {
         });
       });
     }
-
+    
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
       const label = item.querySelector('span')?.textContent.trim();

@@ -42,8 +42,10 @@
                   <option value="yesterday">Yesterday</option>
                   <option value="7-days">Last 7 days</option>
                   <option value="30-days">Last 30 days</option>
+                  <option value="custom">Selected dates</option>
                 </select>
               </label>
+              <div id="hi-date-filter-mount"></div>
             </div>
             <div class="hi-history-tools" id="hi-history-tools" aria-label="Historical data tools">
               <label class="hi-history-search">
@@ -98,10 +100,22 @@
               <section class="hi-trend-card hi-trend-graph-card" aria-labelledby="hi-trend-title">
                 <div class="hi-trend-graph-heading">
                   <h2 class="hi-trend-chart-title" id="hi-trend-title">Heat Index Trend</h2>
-                  <span class="hi-trend-threshold-key">
-                    <span class="hi-trend-legend-dash" aria-hidden="true"></span>
-                    Caution Threshold (32°C)
-                  </span>
+                  <div class="hi-trend-heading-tools">
+                    <span class="hi-trend-threshold-key">
+                      <span class="hi-trend-legend-dash" aria-hidden="true"></span>
+                      Caution Threshold (32°C)
+                    </span>
+                    <div class="hi-trend-chart-type-toggle" role="group" aria-label="Chart type">
+                      <button type="button" class="hi-trend-chart-type-button is-active" data-hi-chart-type="line" aria-pressed="true">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="13" height="13"><polyline points="1,12 5,7 9,10 15,3"/></svg>
+                        Line
+                      </button>
+                      <button type="button" class="hi-trend-chart-type-button" data-hi-chart-type="bar" aria-pressed="false">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="13" height="13"><rect x="1" y="8" width="4" height="7" rx="1"/><rect x="6" y="4" width="4" height="11" rx="1"/><rect x="11" y="6" width="4" height="9" rx="1"/></svg>
+                        Bar
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <p class="hi-trend-mode" id="hi-trend-mode">Average across reporting nodes</p>
                 <div class="hi-trend-chart-area" id="hi-trend-chart-area">

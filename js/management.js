@@ -2,15 +2,18 @@
   'use strict';
 
   const PAGE_SIZE = 7;
-  const VALID_METRICS = ['heat-index', 'temperature', 'humidity', 'pressure'];
   const METRICS = {
     'heat-index': { name: 'Heat Index', field: 'heatIndex', unit: '°C', minimum: -50, maximum: 100, band: 'Risk Level' },
     temperature: { name: 'Temperature', field: 'temperature', unit: '°C', minimum: -50, maximum: 70, band: 'Temperature Band' },
     humidity: { name: 'Humidity', field: 'humidity', unit: '%', minimum: 0, maximum: 100, band: 'Humidity Band' },
     pressure: { name: 'Pressure', field: 'pressure', unit: ' hPa', minimum: 300, maximum: 1200, band: 'Pressure Band' }
   };
+  const METRIC_KEYS = Object.keys(METRICS);
+  const ALL_TELEMETRY = 'all-telemetry';
+  const VALID_METRICS = [ALL_TELEMETRY, ...METRIC_KEYS];
   const elements = {};
   let selectedMetric = 'heat-index';
+  let selectedChartType = 'line';
   let selectedFrom = '';
   let selectedTo = '';
   let reportRows = [];
@@ -108,7 +111,6 @@
           applyingReportDatePreset = true;
           reportDateFilter.setRange(range.startDate, range.endDate, true);
           applyingReportDatePreset = false;
-          updateStatus();
           return;
         } catch (error) {
           applyingReportDatePreset = false;
@@ -134,7 +136,6 @@
       applyingReportDatePreset = true;
       reportDateFilter.setRange(startDate, endDate);
       applyingReportDatePreset = false;
-      updateStatus();
     });
   }
 
@@ -193,32 +194,32 @@
     return (heatIndex - 32) * 5 / 9;
   }
 
-  function metricValue(reading) {
-    const metric = METRICS[selectedMetric];
+  function metricValue(reading, metricKey = selectedMetric) {
+    const metric = METRICS[metricKey];
     const value = parseReading(reading[metric.field]);
     if (value !== null) return value;
-    if (selectedMetric === 'heat-index') {
+    if (metricKey === 'heat-index') {
       return heatIndexCelsius(parseReading(reading.temperature), parseReading(reading.humidity));
     }
     return null;
   }
 
-  function metricBand(value) {
-    if (selectedMetric === 'heat-index') {
+  function metricBand(value, metricKey = selectedMetric) {
+    if (metricKey === 'heat-index') {
       if (value < 27) return ['safe', 'Safe'];
-      if (value < 32) return ['caution', 'Caution'];
-      if (value < 41) return ['extreme-caution', 'Extreme caution'];
-      if (value < 54) return ['danger', 'Danger'];
+      if (value < 33) return ['caution', 'Caution'];
+      if (value < 42) return ['extreme-caution', 'Extreme caution'];
+      if (value < 52) return ['danger', 'Danger'];
       return ['extreme-danger', 'Extreme danger'];
     }
-    if (selectedMetric === 'temperature') {
+    if (metricKey === 'temperature') {
       if (value < 20) return ['safe', 'Cool'];
       if (value < 25) return ['caution', 'Comfortable'];
       if (value < 32) return ['extreme-caution', 'Warm'];
       if (value < 40) return ['danger', 'Hot'];
       return ['extreme-danger', 'Very hot'];
     }
-    if (selectedMetric === 'humidity') {
+    if (metricKey === 'humidity') {
       if (value < 30) return ['safe', 'Dry'];
       if (value < 40) return ['caution', 'Low'];
       if (value < 60) return ['extreme-caution', 'Comfortable'];
@@ -232,8 +233,20 @@
     return ['extreme-danger', 'Very high'];
   }
 
-  function formatValue(value) {
-    return value === null || !Number.isFinite(value) ? '—' : `${value.toFixed(1)}${METRICS[selectedMetric].unit}`;
+  function formatValue(value, metricKey = selectedMetric) {
+    return value === null || !Number.isFinite(value) ? '—' : `${value.toFixed(1)}${METRICS[metricKey].unit}`;
+  }
+
+  function metricKeysForReport() {
+    if (selectedMetric === ALL_TELEMETRY) return METRIC_KEYS;
+    return [
+      selectedMetric,
+      ...METRIC_KEYS.filter((metricKey) => metricKey !== selectedMetric && metricKey !== 'heat-index').slice(0, 2)
+    ];
+  }
+
+  function reportTitle() {
+    return selectedMetric === ALL_TELEMETRY ? 'All Telemetry' : METRICS[selectedMetric].name;
   }
 
   function formatTimestamp(timestamp) {
@@ -263,90 +276,119 @@
   }
 
   function configureMetric() {
-    const metric = METRICS[selectedMetric];
-    document.title = `ORCHID | ${metric.name} Report`;
+    const allTelemetry = selectedMetric === ALL_TELEMETRY;
+    const metric = allTelemetry ? null : METRICS[selectedMetric];
+    document.title = `ORCHID | ${reportTitle()} Report`;
     elements.metric.value = selectedMetric;
-    setText(elements.averageLabel, 'Period Average');
-    setText(elements.averageSub, `Across valid ${metric.name.toLowerCase()} readings`);
-    setText(elements.highestSub, 'Highest value in selected range');
-    setText(elements.valueHeading, `${metric.name} (${metric.unit.trim()})`);
-    setText(elements.bandHeading, metric.band);
-    setText(elements.chartTitle, `${metric.name} Trend`);
-    setText(elements.tableTitle, `${metric.name} Data Records`);
-    setText(elements.tableSubtitle, `Sensor readings in the selected date range.`);
-    // Update the extra columns so they never duplicate the primary metric column
-    const extraHeadings = document.querySelectorAll('.report-extra-col');
-    if (selectedMetric === 'temperature') {
-      if (extraHeadings[0]) extraHeadings[0].textContent = 'Humidity (%)';
-      if (extraHeadings[1]) extraHeadings[1].textContent = 'Pressure (hPa)';
-    } else if (selectedMetric === 'humidity') {
-      if (extraHeadings[0]) extraHeadings[0].textContent = 'Temperature (°C)';
-      if (extraHeadings[1]) extraHeadings[1].textContent = 'Pressure (hPa)';
-    } else if (selectedMetric === 'pressure') {
-      if (extraHeadings[0]) extraHeadings[0].textContent = 'Temperature (°C)';
-      if (extraHeadings[1]) extraHeadings[1].textContent = 'Humidity (%)';
+    elements.averageCard.title = allTelemetry
+      ? 'The number of telemetry metrics included in this report.'
+      : 'The average value across all valid sensor readings in the selected date range.';
+    elements.highestCard.title = allTelemetry
+      ? 'A single highest value cannot be compared across metrics with different units.'
+      : 'The single highest value recorded within the selected date range.';
+    setText(elements.averageLabel, allTelemetry ? 'Metrics' : 'Period Average');
+    setText(elements.averageSub, allTelemetry
+      ? 'Each metric uses its own unit and scale'
+      : `Across valid ${metric.name.toLowerCase()} readings`);
+    setText(elements.highestSub, allTelemetry
+      ? 'Different units cannot be compared'
+      : 'Highest value in selected range');
+    setText(elements.valueHeading, allTelemetry
+      ? `${METRICS['heat-index'].name} (${METRICS['heat-index'].unit.trim()})`
+      : `${metric.name} (${metric.unit.trim()})`);
+    setText(elements.bandHeading, allTelemetry ? '' : metric.band);
+    elements.bandHeading.hidden = allTelemetry;
+    setText(elements.chartTitle, allTelemetry ? 'All Telemetry Trends' : `${metric.name} Trend`);
+    setText(elements.chartSubtitle, allTelemetry
+      ? 'Hourly averages shown separately on each metric’s own scale'
+      : 'Hourly average across reporting sensors');
+    setText(elements.tableTitle, `${reportTitle()} Data Records`);
+    setText(elements.tableSubtitle, allTelemetry
+      ? 'Each row includes all available telemetry readings.'
+      : 'Sensor readings in the selected date range.');
+
+    const extraMetricKeys = metricKeysForReport().slice(1);
+    elements.extraHeadings.forEach((heading, index) => {
+      const metricKey = extraMetricKeys[index];
+      heading.hidden = !metricKey;
+      if (metricKey) {
+        const selected = METRICS[metricKey];
+        heading.textContent = `${selected.name} (${selected.unit.trim()})`;
+      }
+    });
+
+    if (allTelemetry) {
+      elements.average.textContent = String(METRIC_KEYS.length);
+      setText(elements.highestLabel, 'Highest');
+      setText(elements.highest, '—');
     } else {
-      if (extraHeadings[0]) extraHeadings[0].textContent = 'Temperature (°C)';
-      if (extraHeadings[1]) extraHeadings[1].textContent = 'Humidity (%)';
+      setText(elements.highestLabel, 'Highest Reading');
     }
   }
 
   function updateSummary() {
+    const nodes = new Set(reportRows.map((row) => row.nodeId));
+    setText(elements.readingCount, String(reportRows.length));
+    setText(elements.nodeCount, String(nodes.size));
+    elements.exportButton.disabled = reportRows.length === 0;
+    if (selectedMetric === ALL_TELEMETRY) {
+      setText(elements.average, String(METRIC_KEYS.length));
+      setText(elements.highestLabel, 'Highest');
+      setText(elements.highest, '—');
+      setText(elements.highestSub, 'Different units cannot be compared');
+      return;
+    }
+
     const values = reportRows.map((row) => row.value);
     const average = values.length
       ? values.reduce((total, value) => total + value, 0) / values.length
       : null;
     const highest = reportRows.reduce((current, row) => !current || row.value > current.value ? row : current, null);
-    const nodes = new Set(reportRows.map((row) => row.nodeId));
-    setText(elements.readingCount, String(reportRows.length));
     setText(elements.average, formatValue(average));
     setText(elements.highest, highest ? formatValue(highest.value) : '—');
     setText(elements.highestSub, highest
       ? `${highest.location} · ${formatTimestamp(highest.timestamp)}`
       : 'No readings in selected period');
-    setText(elements.nodeCount, String(nodes.size));
-    elements.exportButton.disabled = reportRows.length === 0;
   }
 
   function createRecordRow(record) {
     const row = document.createElement('tr');
-    const band = metricBand(record.value);
-    row.dataset.searchText = `${record.timestampLabel} ${record.nodeId} ${record.location} ${record.value} ${record.temperature ?? ''} ${record.humidity ?? ''} ${band[1]}`.toLocaleLowerCase();
+    const allTelemetry = selectedMetric === ALL_TELEMETRY;
+    const metricKeys = metricKeysForReport();
+    const band = allTelemetry ? null : metricBand(record.value, selectedMetric);
+    row.dataset.searchText = `${record.timestampLabel} ${record.nodeId} ${record.location} ${metricKeys.map((key) => record.metrics[key] ?? '').join(' ')} ${band?.[1] ?? ''}`.toLocaleLowerCase();
     const fields = [
       record.timestampLabel,
       record.nodeId,
-      record.location,
-      formatValue(record.value),
-      selectedMetric === 'temperature'
-        ? (record.humidity === null ? '—' : `${record.humidity.toFixed(1)}%`)
-        : (record.temperature === null ? '—' : `${record.temperature.toFixed(1)}°C`),
-      selectedMetric === 'temperature' || selectedMetric === 'humidity'
-        ? (record.pressure === null ? '—' : `${record.pressure.toFixed(1)} hPa`)
-        : (record.humidity === null ? '—' : `${record.humidity.toFixed(1)}%`)
+      record.location
     ];
     fields.forEach((value, index) => {
       const cell = document.createElement('td');
       if (index === 0) cell.className = 'hi-node-timestamp';
       if (index === 1) cell.className = 'hi-node-id';
       if (index === 2) cell.className = 'hi-node-location';
-      if (index >= 3 && index <= 5) {
-        const metricKey = [selectedMetric, 'temperature', 'humidity'][index - 3];
-        cell.className = 'hi-node-reading';
-        const valueBadge = document.createElement('span');
-        valueBadge.className = `hi-node-value hi-node-value--${metricKey}`;
-        valueBadge.textContent = value;
-        cell.appendChild(valueBadge);
-      } else {
-        cell.textContent = value;
-      }
+      cell.textContent = value;
       row.appendChild(cell);
     });
-    const bandCell = document.createElement('td');
-    const badge = document.createElement('span');
-    badge.className = `hi-level-badge hi-level-badge--${band[0]}`;
-    badge.textContent = band[1];
-    bandCell.appendChild(badge);
-    row.appendChild(bandCell);
+
+    metricKeys.forEach((metricKey, index) => {
+      const cell = document.createElement('td');
+      cell.className = `hi-node-reading${index > 0 ? ' report-extra-col' : ''}`;
+      const badge = document.createElement('span');
+      badge.className = `hi-node-value hi-node-value--${metricKey}`;
+      badge.textContent = formatValue(record.metrics[metricKey], metricKey);
+      cell.appendChild(badge);
+      row.appendChild(cell);
+    });
+
+    if (band) {
+      const bandCell = document.createElement('td');
+      const badge = document.createElement('span');
+      badge.className = `hi-level-badge hi-level-badge--${band[0]}`;
+      badge.textContent = band[1];
+      bandCell.appendChild(badge);
+      row.appendChild(bandCell);
+    }
     return row;
   }
 
@@ -375,6 +417,38 @@
     renderRecordPage(1);
   }
 
+  function reportRecordColumns() {
+    const metricColumns = metricKeysForReport().map((metricKey) =>
+      `${METRICS[metricKey].name} (${METRICS[metricKey].unit.trim()})`
+    );
+    const columns = ['Timestamp', 'Node ID', 'Station / Location', ...metricColumns];
+    if (selectedMetric !== ALL_TELEMETRY) columns.push(METRICS[selectedMetric].band);
+    return columns;
+  }
+
+  function reportRecordValues(record) {
+    const metricValues = metricKeysForReport().map((metricKey) =>
+      formatValue(record.metrics[metricKey], metricKey)
+    );
+    const values = [record.timestampLabel, record.nodeId, record.location, ...metricValues];
+    if (selectedMetric !== ALL_TELEMETRY) {
+      values.push(metricBand(record.value, selectedMetric)[1]);
+    }
+    return values;
+  }
+
+  function reportRecordCsvValues(record) {
+    const metricValues = metricKeysForReport().map((metricKey) => {
+      const value = record.metrics[metricKey];
+      return value === null ? '' : value.toFixed(1);
+    });
+    const values = [record.timestampLabel, record.nodeId, record.location, ...metricValues];
+    if (selectedMetric !== ALL_TELEMETRY) {
+      values.push(metricBand(record.value, selectedMetric)[1]);
+    }
+    return values;
+  }
+
   function svgElement(tag, attributes = {}) {
     const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
     Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
@@ -382,19 +456,56 @@
   }
 
   function drawChart() {
-    elements.chartArea.querySelectorAll('svg').forEach((chart) => chart.remove());
     const empty = elements.chartEmpty;
+    const allTelemetry = selectedMetric === ALL_TELEMETRY;
+    elements.chartArea.replaceChildren();
+    elements.chartArea.setAttribute('role', allTelemetry ? 'group' : 'img');
+    elements.chartArea.setAttribute(
+      'aria-label',
+      allTelemetry ? 'Separate hourly average trends for all telemetry metrics' : 'Hourly average sensor readings chart'
+    );
+    elements.chartArea.classList.toggle('report-chart-area--all-telemetry', allTelemetry);
     if (!reportRows.length) {
       empty.hidden = false;
       empty.textContent = 'No sensor readings are available for this report period.';
+      elements.chartArea.appendChild(empty);
       return;
     }
     empty.hidden = true;
+
+    if (allTelemetry) {
+      const grid = document.createElement('div');
+      grid.className = 'report-metric-chart-grid';
+      const charts = [];
+      METRIC_KEYS.forEach((metricKey) => {
+        const chart = document.createElement('section');
+        chart.className = 'report-metric-chart';
+        const heading = document.createElement('h3');
+        heading.className = 'report-metric-chart-title';
+        heading.textContent = `${METRICS[metricKey].name} (${METRICS[metricKey].unit.trim()})`;
+        const plot = document.createElement('div');
+        plot.className = 'report-metric-chart-plot';
+        chart.append(heading, plot);
+        grid.appendChild(chart);
+        charts.push({ metricKey, plot });
+      });
+      elements.chartArea.appendChild(grid);
+      charts.forEach(({ metricKey, plot }) => drawMetricChart(metricKey, reportRows, plot, true));
+      return;
+    }
+
+    drawMetricChart(selectedMetric, reportRows, elements.chartArea);
+  }
+
+  function drawMetricChart(metricKey, rows, chartArea, compact = false) {
+    const metric = METRICS[metricKey];
     const hourly = new Map();
-    reportRows.forEach((row) => {
+    rows.forEach((row) => {
+      const value = row.metrics[metricKey];
+      if (value === null) return;
       const timestamp = Math.floor(row.timestamp / 3600000) * 3600000;
       const bucket = hourly.get(timestamp) || { total: 0, count: 0 };
-      bucket.total += row.value;
+      bucket.total += value;
       bucket.count += 1;
       hourly.set(timestamp, bucket);
     });
@@ -404,16 +515,23 @@
       count: bucket.count
     }));
     points.sort((first, second) => first.timestamp - second.timestamp);
-    const width = Math.max(480, elements.chartArea.clientWidth);
-    const height = Math.max(250, elements.chartArea.clientHeight);
+    if (!points.length) {
+      const message = document.createElement('p');
+      message.className = 'report-metric-chart-empty';
+      message.textContent = `No valid ${metric.name.toLowerCase()} readings in this period.`;
+      chartArea.appendChild(message);
+      return;
+    }
+    const width = Math.max(compact ? 320 : 480, chartArea.clientWidth);
+    const height = Math.max(compact ? 150 : 250, chartArea.clientHeight);
     const margin = { top: 20, right: 24, bottom: 42, left: 62 };
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
     const low = Math.min(...points.map((point) => point.value));
     const high = Math.max(...points.map((point) => point.value));
     const spread = high - low || Math.max(1, Math.abs(high) * 0.08);
-    const minimum = low - spread * 0.15;
-    const maximum = high + spread * 0.15;
+    const minimum = selectedChartType === 'bar' ? Math.min(0, low - spread * 0.15) : low - spread * 0.15;
+    const maximum = selectedChartType === 'bar' ? Math.max(0, high + spread * 0.15) : high + spread * 0.15;
     const firstTimestamp = points[0].timestamp;
     const lastTimestamp = points[points.length - 1].timestamp;
     const x = (timestamp) => margin.left + (firstTimestamp === lastTimestamp
@@ -429,10 +547,10 @@
       class: 'report-chart-svg',
       viewBox: `0 0 ${width} ${height}`,
       role: 'img',
-      'aria-label': `${METRICS[selectedMetric].name} hourly average trend with ${points.length} time periods`
+      'aria-label': `${metric.name} hourly average ${selectedChartType} chart with ${points.length} time periods`
     });
     const title = svgElement('title');
-    title.textContent = `${METRICS[selectedMetric].name} hourly average`;
+    title.textContent = `${metric.name} hourly average`;
     svg.appendChild(title);
     for (let index = 0; index <= 4; index += 1) {
       const value = maximum - (maximum - minimum) * index / 4;
@@ -455,27 +573,64 @@
       humidity:      style.getPropertyValue('--color-cyan').trim()    || '#38bdf8',
       pressure:      style.getPropertyValue('--color-violet').trim()  || '#a78bfa',
     };
-    const metricColor = METRIC_COLORS[selectedMetric] || '#a6c4ee';
-    const path = points.map((point, index) => `${index ? 'L' : 'M'}${x(point.timestamp)},${y(point.value)}`).join(' ');
-    svg.appendChild(svgElement('path', { d: path, class: 'report-chart-line', stroke: metricColor }));
-    points.forEach((point, index) => {
-      const circle = svgElement('circle', {
-        cx: x(point.timestamp), cy: y(point.value), r: 5, class: 'report-chart-point', fill: metricColor
+    const metricColor = METRIC_COLORS[metricKey] || '#a6c4ee';
+    if (selectedChartType === 'bar') {
+      const n = points.length;
+      // Distribute bars evenly by index so they always fill the plot width,
+      // regardless of how the timestamps happen to cluster.
+      const slotWidth = plotWidth / n;
+      const barWidth = Math.max(2, slotWidth * 0.6);
+      const radius = Math.min(4, barWidth / 4);
+      const baseline = y(0);
+      const xBar = (i) => margin.left + slotWidth * i + slotWidth / 2;
+      points.forEach((point, i) => {
+        const cx = xBar(i);
+        const valueY = y(point.value);
+        const barTop = Math.min(valueY, baseline);
+        const barH = Math.max(2, Math.abs(baseline - valueY));
+        const bar = svgElement('rect', {
+          x: (cx - barWidth / 2).toFixed(1),
+          y: barTop.toFixed(1),
+          width: barWidth.toFixed(1),
+          height: barH.toFixed(1),
+          rx: radius.toFixed(1),
+          class: 'report-chart-bar',
+          fill: metricColor
+        });
+        const tooltip = svgElement('title');
+        tooltip.textContent = `${formatTimestamp(point.timestamp)} · ${formatValue(point.value, metricKey)} hourly average · ${point.count} reading${point.count === 1 ? '' : 's'}`;
+        bar.appendChild(tooltip);
+        svg.appendChild(bar);
       });
-      const tooltip = svgElement('title');
-      tooltip.textContent = `${formatTimestamp(point.timestamp)} · ${formatValue(point.value)} hourly average · ${point.count} reading${point.count === 1 ? '' : 's'}`;
-      circle.appendChild(tooltip);
-      svg.appendChild(circle);
+    } else {
+      const path = points.map((point, index) => `${index ? 'L' : 'M'}${x(point.timestamp)},${y(point.value)}`).join(' ');
+      svg.appendChild(svgElement('path', { d: path, class: 'report-chart-line', stroke: metricColor }));
+      points.forEach((point) => {
+        const circle = svgElement('circle', {
+          cx: x(point.timestamp), cy: y(point.value), r: 5, class: 'report-chart-point', fill: metricColor
+        });
+        const tooltip = svgElement('title');
+        tooltip.textContent = `${formatTimestamp(point.timestamp)} · ${formatValue(point.value, metricKey)} hourly average · ${point.count} reading${point.count === 1 ? '' : 's'}`;
+        circle.appendChild(tooltip);
+        svg.appendChild(circle);
+      });
+    }
+    points.forEach((point, index) => {
       if (points.length <= 8 || index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0) {
+        const n = points.length;
+        const slotWidth = plotWidth / n;
+        const xPos = selectedChartType === 'bar'
+          ? margin.left + slotWidth * index + slotWidth / 2
+          : x(point.timestamp);
         const label = svgElement('text', {
-          x: x(point.timestamp), y: height - 12, 'text-anchor': 'middle',
+          x: xPos, y: height - 12, 'text-anchor': 'middle',
           class: 'report-chart-axis'
         });
         label.textContent = axisDate.format(new Date(point.timestamp));
         svg.appendChild(label);
       }
     });
-    elements.chartArea.appendChild(svg);
+    chartArea.appendChild(svg);
   }
 
   function updateStatus(message = '', state = 'info') {
@@ -516,6 +671,9 @@
     const version = ++requestVersion;
     elements.exportButton.disabled = true;
     elements.tableBody.innerHTML = '<tr><td class="hi-table-empty" colspan="7">Loading report data…</td></tr>';
+    elements.chartArea.classList.remove('report-chart-area--all-telemetry');
+    elements.chartArea.setAttribute('role', 'img');
+    elements.chartArea.replaceChildren(elements.chartEmpty);
     elements.chartEmpty.hidden = false;
     elements.chartEmpty.textContent = 'Loading report data…';
     setText(elements.chartNote, 'Loading report data…');
@@ -538,10 +696,17 @@
             const readings = Array.isArray(node.dateReadings) ? node.dateReadings : [];
             readings.forEach((reading) => {
               const timestamp = sensorTimestamp(reading.createdAt);
-              const value = metricValue(reading);
-              const metric = METRICS[selectedMetric];
-              if (!Number.isFinite(timestamp) || value === null ||
-                  value < metric.minimum || value > metric.maximum) return;
+              const metrics = Object.fromEntries(METRIC_KEYS.map((metricKey) => {
+                const metric = METRICS[metricKey];
+                const value = metricValue(reading, metricKey);
+                return [metricKey, Number.isFinite(value) && value >= metric.minimum && value <= metric.maximum
+                  ? value
+                  : null];
+              }));
+              const allTelemetry = selectedMetric === ALL_TELEMETRY;
+              const value = allTelemetry ? null : metrics[selectedMetric];
+              if (!Number.isFinite(timestamp) ||
+                  (allTelemetry ? METRIC_KEYS.every((metricKey) => metrics[metricKey] === null) : value === null)) return;
               const readingDate = manilaDate(new Date(timestamp));
               if (readingDate < selectedFrom || readingDate > selectedTo) return;
               rows.push({
@@ -551,9 +716,7 @@
                 nodeId: node.id || node.key,
                 location: node.location || node.name || node.key,
                 value,
-                temperature: parseReading(reading.temperature),
-                humidity: parseReading(reading.humidity),
-                pressure: parseReading(reading.pressure)
+                metrics
               });
             });
           });
@@ -563,7 +726,7 @@
       rows.sort((first, second) => second.timestamp - first.timestamp);
       reportRows = rows.map((row) => ({
         ...row,
-        searchText: `${row.timestampLabel} ${row.nodeId} ${row.location} ${row.value} ${row.temperature ?? ''} ${row.humidity ?? ''} ${metricBand(row.value)[1]}`.toLocaleLowerCase()
+        searchText: `${row.timestampLabel} ${row.nodeId} ${row.location} ${METRIC_KEYS.map((key) => row.metrics[key] ?? '').join(' ')} ${selectedMetric === ALL_TELEMETRY ? '' : metricBand(row.value, selectedMetric)[1]}`.toLocaleLowerCase()
       }));
       updateSummary();
       drawChart();
@@ -593,19 +756,10 @@
   }
 
   function exportCsv() {
-    const metric = METRICS[selectedMetric];
-    const fields = ['Timestamp', 'Node ID', 'Station / Location', `${metric.name} (${metric.unit.trim()})`, 'Temperature (°C)', 'Humidity (%)', metric.band];
     const escapeCsv = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-    const rows = filteredRows.map((row) => [
-      row.timestampLabel,
-      row.nodeId,
-      row.location,
-      row.value.toFixed(1),
-      row.temperature?.toFixed(1) ?? '',
-      row.humidity?.toFixed(1) ?? '',
-      metricBand(row.value)[1]
-    ]);
-    const csv = [fields, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\r\n');
+    const csv = [reportRecordColumns(), ...filteredRows.map(reportRecordCsvValues)]
+      .map((row) => row.map(escapeCsv).join(','))
+      .join('\r\n');
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -626,8 +780,7 @@
       return;
     }
 
-    const metric = METRICS[selectedMetric];
-    const columns = ['Timestamp', 'Node ID', 'Station / Location', `${metric.name} (${metric.unit.trim()})`, 'Temperature (°C)', 'Humidity (%)', metric.band];
+    const title = reportTitle();
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -635,25 +788,16 @@
       '"': '&quot;',
       "'": '&#39;'
     })[character]);
-    const tableHead = columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('');
-    const tableRows = filteredRows.map((row) => {
-      const values = [
-        row.timestampLabel,
-        row.nodeId,
-        row.location,
-        formatValue(row.value),
-        row.temperature === null ? '—' : `${row.temperature.toFixed(1)}°C`,
-        row.humidity === null ? '—' : `${row.humidity.toFixed(1)}%`,
-        metricBand(row.value)[1]
-      ];
-      return `<tr>${values.map((value) => `<td>${escapeHtml(value)}</td>`).join('')}</tr>`;
-    }).join('');
+    const tableHead = reportRecordColumns().map((column) => `<th>${escapeHtml(column)}</th>`).join('');
+    const tableRows = filteredRows.map((row) =>
+      `<tr>${reportRecordValues(row).map((value) => `<td>${escapeHtml(value)}</td>`).join('')}</tr>`
+    ).join('');
 
     printWindow.document.write(`<!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>ORCHID ${escapeHtml(metric.name)} Report</title>
+        <title>ORCHID ${escapeHtml(title)} Report</title>
         <style>
           @page { size: landscape; margin: 12mm; }
           body { color: #18202b; font: 10px Arial, sans-serif; }
@@ -667,7 +811,7 @@
         </style>
       </head>
       <body>
-        <h1>ORCHID ${escapeHtml(metric.name)} Report</h1>
+        <h1>ORCHID ${escapeHtml(title)} Report</h1>
         <p>${filteredRows.length.toLocaleString()} readings · ${escapeHtml(selectedFrom)} — ${escapeHtml(selectedTo)} · Exported ${escapeHtml(new Date().toLocaleString())}</p>
         <table><thead><tr>${tableHead}</tr></thead><tbody>${tableRows}</tbody></table>
         <script>window.addEventListener('load', () => window.print());</script>
@@ -1126,17 +1270,23 @@
       status: document.getElementById('report-data-status'),
       readingCount: document.getElementById('report-reading-count'),
       average: document.getElementById('report-average'),
+      averageCard: document.querySelector('.report-metrics .metric-card:nth-child(2)'),
       averageLabel: document.querySelector('.report-metrics .metric-card:nth-child(2) .metric-label'),
       averageSub: document.querySelector('.report-metrics .metric-card:nth-child(2) .metric-sub'),
       highest: document.getElementById('report-highest'),
+      highestCard: document.querySelector('.report-metrics .metric-card:nth-child(3)'),
+      highestLabel: document.querySelector('.report-metrics .metric-card:nth-child(3) .metric-label'),
       highestSub: document.getElementById('report-highest-detail'),
       nodeCount: document.getElementById('report-node-count'),
       valueHeading: document.getElementById('report-value-heading'),
+      extraHeadings: [...document.querySelectorAll('.report-extra-col')],
       bandHeading: document.getElementById('report-band-heading'),
       chartTitle: document.getElementById('report-chart-title'),
+      chartSubtitle: document.getElementById('report-chart-subtitle'),
       chartNote: document.getElementById('report-chart-note'),
       chartArea: document.getElementById('report-chart-area'),
       chartEmpty: document.getElementById('report-chart-empty'),
+      chartTypeButtons: [...document.querySelectorAll('[data-report-chart-type]')],
       chartPanel: document.getElementById('report-panel-chart'),
       recordsPanel: document.getElementById('report-panel-records'),
       tableTitle: document.getElementById('report-table-title'),
@@ -1232,6 +1382,19 @@
     });
     elements.tabChart.addEventListener('click', () => setActivePanel('chart'));
     elements.tabRecords.addEventListener('click', () => setActivePanel('records'));
+    elements.chartTypeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const chartType = button.dataset.reportChartType;
+        if (chartType !== 'line' && chartType !== 'bar') return;
+        selectedChartType = chartType;
+        elements.chartTypeButtons.forEach((typeButton) => {
+          const isActive = typeButton === button;
+          typeButton.classList.toggle('is-active', isActive);
+          typeButton.setAttribute('aria-pressed', String(isActive));
+        });
+        drawChart();
+      });
+    });
     elements.search.addEventListener('input', () => {
       window.clearTimeout(searchTimer);
       searchTimer = window.setTimeout(renderRecords, 300);

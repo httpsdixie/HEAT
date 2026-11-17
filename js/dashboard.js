@@ -30,6 +30,7 @@
   const isNonHeatMetricPage = selectedMetric !== 'heat-index';
   let currentHeatTrendNodes = [];
   let currentHeatTrendReadings = [];
+  let heatTrendChartType = 'line';
   let currentHeatIndexNodes = [];
   let currentHeatIndexReadings = [];
   let heatLocationPagination = null;
@@ -375,9 +376,9 @@
 
   function heatLevel(value) {
     if (value < 27) return { key: 'safe', label: 'Safe' };
-    if (value < 32) return { key: 'caution', label: 'Caution' };
-    if (value < 41) return { key: 'extreme-caution', label: 'Extreme caution' };
-    if (value < 54) return { key: 'danger', label: 'Danger' };
+    if (value < 33) return { key: 'caution', label: 'Caution' };
+    if (value < 42) return { key: 'extreme-caution', label: 'Extreme caution' };
+    if (value < 52) return { key: 'danger', label: 'Danger' };
     return { key: 'extreme-danger', label: 'Extreme danger' };
   }
 
@@ -1017,12 +1018,12 @@
 
     // ── Y-axis range ─────────────────────────────────────────────
     const allValues  = visibleSeries.flatMap((s) => s.points.map((p) => p.value));
-    const CAUTION    = 32;
+    const CAUTION    = 33;
     if (!isNonHeatMetricPage) allValues.push(CAUTION);
     const rawMin = Math.min(...allValues);
     const rawMax = Math.max(...allValues);
     const pad    = (rawMax - rawMin) * 0.15 || 2;
-    const yMin   = Math.floor(rawMin - pad);
+    const yMin   = heatTrendChartType === 'bar' ? Math.min(0, Math.floor(rawMin - pad)) : Math.floor(rawMin - pad);
     const yMax   = Math.ceil(rawMax  + pad);
     const yRange = yMax - yMin;
 
@@ -1125,63 +1126,150 @@
     svg.appendChild(xTitle);
 
     // ── Per-node series lines + fills ────────────────────────────
-    visibleSeries.forEach((s) => {
-      const color  = s.color;
-      const pts    = s.points.map((p) => ({
-        x: toX(p.timestamp),
-        y: toY(p.value)
-      }));
+    if (heatTrendChartType === 'bar') {
+      // Aggregate each series into time buckets so bars are readable.
+      // Pick a bucket size based on the range span:
+      // ≤2 h → 5-min buckets, ≤1 d → 30-min, ≤7 d → 3-h, else → 24-h
+      const spanMs = rangeEnd - rangeStart;
+      const bucketMs = spanMs <= 2 * 3600000       ? 5  * 60000
+                     : spanMs <= 24 * 3600000       ? 30 * 60000
+                     : spanMs <= 7  * 24 * 3600000  ? 3  * 3600000
+                     :                                24 * 3600000;
 
-      const pathD = trendPath(pts);
-      const lastPt = pts[pts.length - 1];
-      if (pathD) {
-        const firstPt = pts[0];
-        const fillD = `${pathD} L${lastPt.x.toFixed(1)},${PAD_T + plotH} L${firstPt.x.toFixed(1)},${PAD_T + plotH} Z`;
-        svg.appendChild(el('path', {
-          d: fillD, fill: `url(#hi-grad-${s.colorIndex})`,
-          stroke: 'none', 'clip-path': 'url(#hi-plot-clip)'
+      // Build bucketed data per series
+      const bucketedSeries = visibleSeries.map((s) => {
+        const buckets = new Map();
+        s.points.forEach((p) => {
+          const key = Math.floor(p.timestamp / bucketMs) * bucketMs;
+          const b = buckets.get(key) || { total: 0, count: 0 };
+          b.total += p.value;
+          b.count += 1;
+          buckets.set(key, b);
+        });
+        const points = [...buckets.entries()]
+          .map(([ts, b]) => ({
+            timestamp: ts + bucketMs / 2,
+            value: b.total / b.count,
+            label: s.points.find((p) => Math.abs(p.timestamp - (ts + bucketMs / 2)) < bucketMs)?.label
+              || new Intl.DateTimeFormat('en-PH', {
+                  month: 'short', day: 'numeric',
+                  hour: '2-digit', minute: '2-digit',
+                  hour12: false, timeZone: 'Asia/Manila'
+                }).format(new Date(ts + bucketMs / 2))
+          }))
+          .sort((a, b) => a.timestamp - b.timestamp);
+        return { ...s, points };
+      });
+
+      // Collect all unique bucket timestamps to size bars properly
+      const allBucketTs = [...new Set(bucketedSeries.flatMap((s) => s.points.map((p) => p.timestamp)))].sort((a, b) => a - b);
+      const seriesCount = bucketedSeries.length;
+
+      // Pixel gap between adjacent bucket centers (or full plotW if only one bucket)
+      const minGap = allBucketTs.length > 1
+        ? allBucketTs.reduce((min, ts, i) => i === 0 ? min : Math.min(min, toX(ts) - toX(allBucketTs[i - 1])), Infinity)
+        : plotW;
+      const groupWidth = Math.min(minGap * 0.8, 48 * seriesCount);
+      const barWidth   = Math.max(3, groupWidth / seriesCount - 2);
+      const baseline   = toY(Math.max(yMin, 0));
+
+      bucketedSeries.forEach((s, seriesIndex) => {
+        const color  = s.color;
+        const offset = (seriesIndex - (seriesCount - 1) / 2) * (barWidth + 2);
+        s.points.forEach((point) => {
+          const cx     = toX(point.timestamp) + offset;
+          const valueY = toY(point.value);
+          const barTop = Math.min(valueY, baseline);
+          const barH   = Math.max(2, Math.abs(baseline - valueY));
+          const bar = el('rect', {
+            x:      (cx - barWidth / 2).toFixed(1),
+            y:      barTop.toFixed(1),
+            width:  barWidth.toFixed(1),
+            height: barH.toFixed(1),
+            rx:     Math.min(3, barWidth / 3).toFixed(1),
+            fill:   color,
+            opacity: '0.85',
+            'clip-path': 'url(#hi-plot-clip)'
+          });
+          const tip = el('title');
+          tip.textContent = `${s.label} · ${point.value.toFixed(1)}${metricUnit()} at ${point.label}`;
+          bar.appendChild(tip);
+          svg.appendChild(bar);
+          // Invisible hit rect for tooltip interaction
+          const hitW = Math.max(barWidth, 12);
+          const hit = el('rect', {
+            x:      (cx - hitW / 2).toFixed(1),
+            y:      barTop.toFixed(1),
+            width:  hitW.toFixed(1),
+            height: barH.toFixed(1),
+            fill:   'transparent',
+            class:  'hi-trend-point-hit',
+            'data-tooltip-title':  s.label,
+            'data-tooltip-detail': `${point.value.toFixed(1)}${metricUnit()} at ${point.label}`,
+            'clip-path': 'url(#hi-plot-clip)'
+          });
+          svg.appendChild(hit);
+        });
+      });
+    } else {
+      visibleSeries.forEach((s) => {
+        const color  = s.color;
+        const pts    = s.points.map((p) => ({
+          x: toX(p.timestamp),
+          y: toY(p.value)
         }));
 
-        const latestPoint = s.points[s.points.length - 1];
-        svg.appendChild(el('path', {
-          d: pathD,
-          class: 'hi-trend-series-hit',
-          'data-tooltip-title': s.label,
-          'data-tooltip-detail': `Latest: ${latestPoint.value.toFixed(1)}${metricUnit()} at ${latestPoint.label}`,
-          'clip-path': 'url(#hi-plot-clip)'
-        }));
+        const pathD = trendPath(pts);
+        const lastPt = pts[pts.length - 1];
+        if (pathD) {
+          const firstPt = pts[0];
+          const fillD = `${pathD} L${lastPt.x.toFixed(1)},${PAD_T + plotH} L${firstPt.x.toFixed(1)},${PAD_T + plotH} Z`;
+          svg.appendChild(el('path', {
+            d: fillD, fill: `url(#hi-grad-${s.colorIndex})`,
+            stroke: 'none', 'clip-path': 'url(#hi-plot-clip)'
+          }));
 
-        svg.appendChild(el('path', {
-          d: pathD, fill: 'none',
-          stroke: color, 'stroke-width': '2.2',
-          'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+          const latestPoint = s.points[s.points.length - 1];
+          svg.appendChild(el('path', {
+            d: pathD,
+            class: 'hi-trend-series-hit',
+            'data-tooltip-title': s.label,
+            'data-tooltip-detail': `Latest: ${latestPoint.value.toFixed(1)}${metricUnit()} at ${latestPoint.label}`,
+            'clip-path': 'url(#hi-plot-clip)'
+          }));
+
+          svg.appendChild(el('path', {
+            d: pathD, fill: 'none',
+            stroke: color, 'stroke-width': '2.2',
+            'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+            'pointer-events': 'none',
+            'clip-path': 'url(#hi-plot-clip)'
+          }));
+        }
+
+        // End-point dot
+        svg.appendChild(el('circle', {
+          cx: lastPt.x.toFixed(1), cy: lastPt.y.toFixed(1),
+          r: '3.5', fill: color,
+          stroke: 'rgba(10,7,24,0.9)', 'stroke-width': '1.5',
           'pointer-events': 'none',
           'clip-path': 'url(#hi-plot-clip)'
         }));
-      }
 
-      // End-point dot
-      svg.appendChild(el('circle', {
-        cx: lastPt.x.toFixed(1), cy: lastPt.y.toFixed(1),
-        r: '3.5', fill: color,
-        stroke: 'rgba(10,7,24,0.9)', 'stroke-width': '1.5',
-        'pointer-events': 'none',
-        'clip-path': 'url(#hi-plot-clip)'
-      }));
-
-      s.points.forEach((point, index) => {
-        const pointPosition = pts[index];
-        svg.appendChild(el('circle', {
-          cx: pointPosition.x.toFixed(1),
-          cy: pointPosition.y.toFixed(1),
-          r: '8',
-          class: 'hi-trend-point-hit',
-          'data-tooltip-title': s.label,
-          'data-tooltip-detail': `${point.value.toFixed(1)}${metricUnit()} at ${point.label}`,
-          'clip-path': 'url(#hi-plot-clip)'
-        }));
+        s.points.forEach((point, index) => {
+          const pointPosition = pts[index];
+          svg.appendChild(el('circle', {
+            cx: pointPosition.x.toFixed(1),
+            cy: pointPosition.y.toFixed(1),
+            r: '8',
+            class: 'hi-trend-point-hit',
+            'data-tooltip-title': s.label,
+            'data-tooltip-detail': `${point.value.toFixed(1)}${metricUnit()} at ${point.label}`,
+            'clip-path': 'url(#hi-plot-clip)'
+          }));
+        });
       });
-    });
+    }
 
     area.appendChild(svg);
 
@@ -1214,6 +1302,22 @@
 
     riskTab.addEventListener('click', () => setActiveTab(false));
     locationsTab.addEventListener('click', () => setActiveTab(true));
+
+    // ── Chart type toggle (line / bar) ────────────────────────────
+    const chartTypeButtons = [...document.querySelectorAll('[data-hi-chart-type]')];
+    chartTypeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const chartType = button.dataset.hiChartType;
+        if (chartType !== 'line' && chartType !== 'bar') return;
+        heatTrendChartType = chartType;
+        chartTypeButtons.forEach((btn) => {
+          const isActive = btn === button;
+          btn.classList.toggle('is-active', isActive);
+          btn.setAttribute('aria-pressed', String(isActive));
+        });
+        renderHeatTrendChart(currentHeatTrendNodes, currentHeatTrendReadings);
+      });
+    });
     const historySearch = document.getElementById('hi-history-search');
     historySearch?.addEventListener('input', () => {
       heatLocationSearchQuery = historySearch.value;

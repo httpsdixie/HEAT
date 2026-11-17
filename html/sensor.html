@@ -489,6 +489,11 @@
   <div id="modal-mount"></div>
 
   <style>
+    .dashboard-viewport {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
     /* ── 4-col sensor metrics grid ── */
     .metrics-grid--sensor {
       grid-template-columns: repeat(4, 1fr);
@@ -976,6 +981,7 @@
       flex: 1 1 auto;
       min-height: 0;
       width: auto;
+      overflow: hidden;
     }
 
     .sensor-activity-view .sensor-table {
@@ -1157,7 +1163,8 @@
     .sensor-card-main {
       display: flex;
       flex-direction: column;
-      gap: 0;
+      justify-content: flex-start;
+      gap: 10px;
       overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: rgba(var(--color-accent-rgb), 0.3) transparent;
@@ -1168,7 +1175,7 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 0;
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border-soft);
     }
@@ -1288,6 +1295,10 @@
       margin: 8px 0 6px;
     }
 
+    .sensor-card-main > .sn-section-heading {
+      margin: 0;
+    }
+
     .sn-section-heading svg {
       color: var(--color-accent-light);
       flex-shrink: 0;
@@ -1299,6 +1310,7 @@
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
       align-items: stretch;
+      flex: 1 1 0;
     }
 
 
@@ -1515,8 +1527,8 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
-      margin-bottom: 4px;
       align-items: stretch;
+      flex: 1 1 0;
     }
 
     /* Base card — accent colour supplied by modifier class via CSS custom prop */

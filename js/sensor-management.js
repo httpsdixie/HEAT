@@ -53,6 +53,8 @@
   let sensorDataLoadError = false;
   const fleetPageSize = 3;
   let activityPageSize = 6;
+  let activityPagination = null;
+  let activityRequestVersion = 0;
   let fleetPagination = null;
   let selectedFleetNodeKey = null;
   let showFleetNode = null;
@@ -184,13 +186,29 @@
     }).format(date)} PHT`;
   }
 
-  async function renderSensorActivity(page = 1) {
+  function fitActivityRowsToTable() {
+    const tableWrap = document.querySelector('.sensor-activity-view .sensor-table-wrap');
+    const tableHeader = document.querySelector('.sensor-activity-view .sensor-table thead');
+    if (!tableWrap || !tableHeader) return;
+
+    const rows = tableWrap.querySelectorAll('.sensor-activity-row');
+    if (rows.length === 0 || rows.length !== activityPageSize) return;
+
+    const available = tableWrap.clientHeight - tableHeader.getBoundingClientRect().height - 2;
+    const rowHeight = available / rows.length;
+    if (rowHeight < 1) return;
+    rows.forEach((row) => { row.style.height = `${rowHeight}px`; });
+  }
+
+  async function renderSensorActivity(page = 1, pageSize = activityPageSize) {
     const body = document.getElementById('sensor-activity-body');
     const paginationMount = document.getElementById('sensor-activity-pagination');
     const activityCount = document.getElementById('sensor-activity-count');
     if (!body || !paginationMount) return;
 
-    const pageSize = activityPageSize;    const offset   = (page - 1) * pageSize;
+    activityPageSize = pageSize;
+    const requestVersion = ++activityRequestVersion;
+    const offset = (page - 1) * pageSize;
 
     // Show loading state
     const loadingRow = document.createElement('tr');
@@ -212,6 +230,7 @@
       events = data.events;
       total = data.total;
     } catch (error) {
+      if (requestVersion !== activityRequestVersion) return;
       console.error('Could not load sensor activity.', error);
       const errRow = document.createElement('tr');
       const errCell = document.createElement('td');
@@ -222,11 +241,20 @@
       retryButton.type = 'button';
       retryButton.className = 'sensor-tool-button';
       retryButton.textContent = 'Retry';
-      retryButton.addEventListener('click', () => renderSensorActivity(page));
+      retryButton.addEventListener('click', () => renderSensorActivity(page, pageSize));
       errCell.appendChild(retryButton);
       errRow.appendChild(errCell);
       body.replaceChildren(errRow);
       return;
+    }
+
+    if (requestVersion !== activityRequestVersion) return;
+
+    if (activityPagination) {
+      activityPagination.setTotal(total, { preservePage: true });
+      if (activityPagination.getPage() !== page) {
+        return renderSensorActivity(activityPagination.getPage(), pageSize);
+      }
     }
 
     if (activityCount) {
@@ -277,29 +305,17 @@
       }));
     }
 
-    paginationMount.replaceChildren();
-    await window.OrchidComponentLoader.initPagination(paginationMount, {
-      total,
-      pageSize,
-      page,
-      onChange: (newPage) => renderSensorActivity(newPage)
-    });
+    requestAnimationFrame(fitActivityRowsToTable);
 
-    // After render, recalculate page size based on actual row height
-    requestAnimationFrame(() => {
-      const wrap = document.querySelector('.sensor-activity-view .sensor-table-wrap');
-      const thead = document.querySelector('.sensor-activity-view .sensor-table thead');
-      const firstRow = document.querySelector('.sensor-activity-view .sensor-table tbody tr');
-      if (!wrap || !firstRow) return;
-      const headerH = thead ? thead.getBoundingClientRect().height : 44;
-      const rowH = firstRow.getBoundingClientRect().height;
-      if (rowH < 1) return;
-      const newSize = Math.max(5, Math.floor((wrap.clientHeight - headerH - 2) / rowH));
-      if (newSize !== activityPageSize) {
-        activityPageSize = newSize;
-        renderSensorActivity(1);
-      }
-    });
+    if (!activityPagination) {
+      paginationMount.replaceChildren();
+      activityPagination = await window.OrchidComponentLoader.initPagination(paginationMount, {
+        total,
+        pageSize,
+        page,
+        onChange: (newPage, newPageSize) => renderSensorActivity(newPage, newPageSize)
+      });
+    }
   }
 
   /** Build a single <tr> for a sensor row */
@@ -846,9 +862,9 @@
   function heatIndexLevel(str) {
     const n = parseFloat(str);
     if (isNaN(n))  return '—';
-    if (n >= 54)   return 'Extreme Danger';
-    if (n >= 41)   return 'Danger';
-    if (n >= 32)   return 'Extreme Caution';
+    if (n >= 52)   return 'Extreme Danger';
+    if (n >= 42)   return 'Danger';
+    if (n >= 33)   return 'Extreme Caution';
     if (n >= 27)   return 'Caution';
     return 'Normal';
   }
@@ -1477,27 +1493,43 @@
     initViewToggle();
     initBatteryHistoryToggle();
 
-    // Dynamically resize activity page size when the table wrap changes height
+    // Fit the Activity page size to the table's available height.
+    const activitySection = document.getElementById('sensor-activity-view');
     const activityTableWrap = document.querySelector('.sensor-activity-view .sensor-table-wrap');
     const activityTableHeader = document.querySelector('.sensor-activity-view .sensor-table thead');
-    if (activityTableWrap && 'ResizeObserver' in window) {
-      let activityResizeTimer = null;
-      new ResizeObserver(() => {
-        clearTimeout(activityResizeTimer);
-        activityResizeTimer = setTimeout(() => {
-          const headerH = activityTableHeader ? activityTableHeader.getBoundingClientRect().height : 44;
-          // measure an actual rendered row if available, otherwise fall back to 46px
-          const firstRow = document.querySelector('.sensor-activity-view .sensor-table tbody tr');
-          const rowH = firstRow ? firstRow.getBoundingClientRect().height : 46;
-          const available = activityTableWrap.clientHeight - headerH - 2;
-          const newSize = Math.max(5, Math.floor(available / rowH));
-          if (newSize !== activityPageSize) {
-            activityPageSize = newSize;
-            renderSensorActivity(1);
-          }
-        }, 120);
-      }).observe(activityTableWrap);
+
+    function recalcActivityPageSize() {
+      if (!activityTableWrap) return;
+      const headerH = activityTableHeader?.getBoundingClientRect().height ?? 44;
+      const rows = activityTableWrap.querySelectorAll('.sensor-activity-row');
+      rows.forEach((row) => { row.style.removeProperty('height'); });
+      const firstRow = rows[0];
+      if (!firstRow) return;
+      const rowH = firstRow.getBoundingClientRect().height;
+      if (rowH < 1) return;
+      const available = Math.max(0, activityTableWrap.clientHeight - headerH - 2);
+      const newSize = Math.max(1, Math.floor(available / rowH));
+      if (newSize !== activityPageSize) {
+        activityPageSize = newSize;
+        if (activityPagination) activityPagination.setPageSize(newSize);
+        else renderSensorActivity(1, newSize);
+        return;
+      }
+      fitActivityRowsToTable();
     }
+
+    let activityResizeTimer = null;
+    const scheduleActivityPageSize = () => {
+      clearTimeout(activityResizeTimer);
+      activityResizeTimer = setTimeout(recalcActivityPageSize, 150);
+    };
+    if ('ResizeObserver' in window) {
+      const activityResizeObserver = new ResizeObserver(scheduleActivityPageSize);
+      if (activitySection) activityResizeObserver.observe(activitySection);
+      if (activityTableWrap) activityResizeObserver.observe(activityTableWrap);
+    }
+    window.addEventListener('resize', scheduleActivityPageSize, { passive: true });
+    requestAnimationFrame(recalcActivityPageSize);
     await initNodeInspector();
     if (requestedNodeId) {
       const requestedNode = allSensors.find((sensor) => sensor.id === requestedNodeId);

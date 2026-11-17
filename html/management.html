@@ -105,6 +105,7 @@
               <label class="report-filter-field">
                 <span>Metric</span>
                 <select id="report-metric" aria-label="Choose report metric">
+                  <option value="all-telemetry">All Telemetry</option>
                   <option value="heat-index">Heat Index</option>
                   <option value="temperature">Temperature</option>
                   <option value="humidity">Humidity</option>
@@ -148,7 +149,13 @@
                 <h2 class="status-card-title" id="report-chart-title">Heat Index Trend</h2>
                 <p class="report-panel-subtitle" id="report-chart-subtitle">Hourly average across reporting sensors</p>
               </div>
-              <span class="hi-live-note" id="report-chart-note">Loading report data…</span>
+              <div class="report-chart-tools">
+                <div class="report-chart-type-toggle" role="group" aria-label="Chart type">
+                  <button type="button" class="report-chart-type-button is-active" data-report-chart-type="line" aria-pressed="true">Line</button>
+                  <button type="button" class="report-chart-type-button" data-report-chart-type="bar" aria-pressed="false">Bar</button>
+                </div>
+                <span class="hi-live-note" id="report-chart-note">Loading report data…</span>
+              </div>
             </div>
             <div class="report-chart-area" id="report-chart-area" role="img" aria-label="Hourly average sensor readings chart">
               <p class="hi-trend-empty" id="report-chart-empty">Loading report data…</p>
@@ -179,6 +186,7 @@
                     <th scope="col" id="report-value-heading">Heat Index (°C)</th>
                     <th scope="col" class="report-extra-col">Temperature (°C)</th>
                     <th scope="col" class="report-extra-col">Humidity (%)</th>
+                    <th scope="col" class="report-extra-col" hidden>Pressure (hPa)</th>
                     <th scope="col" id="report-band-heading">Risk Level</th>
                   </tr>
                 </thead>

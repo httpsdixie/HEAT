@@ -655,6 +655,50 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.hi-trend-heading-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hi-trend-chart-type-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+
+.hi-trend-chart-type-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  padding: 2px 9px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-md) - 3px);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hi-trend-chart-type-button:hover,
+.hi-trend-chart-type-button.is-active {
+  border-color: var(--border-accent-bright);
+  background: var(--bg-pill-hover);
+  color: var(--text-white);
+}
+
+.hi-trend-chart-type-button:focus-visible {
+  outline: 2px solid var(--color-accent-light);
+  outline-offset: 2px;
+}
+
 .hi-trend-mode {
   margin: 0 0 4px;
   color: var(--text-muted);
