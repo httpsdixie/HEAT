@@ -51,44 +51,164 @@ def require_number(msg, field):
 # ============================================================
 # AUTO-DETECT SERIAL PORT
 # ============================================================
+
+# Hardware USB vendor/product IDs for the two most common ESP32 USB-serial chips.
+# These are hardware constants — far more reliable than description text matching.
+_ESP32_VID_PIDS = {
+    (0x10C4, 0xEA60),  # Silicon Labs CP210x (most Heltec boards)
+    (0x1A86, 0x7523),  # QinHeng CH340
+    (0x1A86, 0x55D4),  # QinHeng CH9102 (newer boards)
+    (0x0403, 0x6001),  # FTDI FT232R
+    (0x0403, 0x6010),  # FTDI FT2232
+    (0x0403, 0x6015),  # FTDI FT231X
+    (0x239A, None),    # Adafruit (any PID)
+    (0x303A, None),    # Espressif native USB (ESP32-S2/S3)
+}
+
+_DESC_KEYWORDS = [
+    'cp210', 'ch340', 'ch9102', 'usb serial', 'uart', 'ftdi',
+    'esp32', 'heltec', 'tinyusb', 'cdc', 'jtag',
+]
+
+# File that remembers the last successfully used port
+_PORT_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.last_port')
+
+
+def _score_port(p):
+    """Return a confidence score for a port being the ORCHID receiver.
+    Higher = more likely. 0 = almost certainly not the receiver."""
+    score = 0
+    vid = getattr(p, 'vid', None)
+    pid = getattr(p, 'pid', None)
+    desc = (p.description or '').lower()
+    device = (p.device or '').lower()
+
+    # VID/PID match is the strongest signal
+    if vid is not None:
+        for v, pr in _ESP32_VID_PIDS:
+            if vid == v and (pr is None or pid == pr):
+                score += 100
+                break
+
+    # Description keyword match
+    if any(k in desc for k in _DESC_KEYWORDS):
+        score += 50
+
+    # Linux device name hints
+    if any(k in device for k in ['ttyusb', 'ttyacm']):
+        score += 30
+
+    return score
+
+
+def _list_candidates():
+    """Return all ports scored > 0, sorted best-first."""
+    ports = serial.tools.list_ports.comports()
+    scored = [(p, _score_port(p)) for p in ports]
+    scored.sort(key=lambda x: x[1], reverse=True)
+    return [(p, s) for p, s in scored if s > 0], ports
+
+
+def _ask_user(candidates, all_ports):
+    """Prompt the user to pick a port when auto-detection is ambiguous."""
+    print("\n  Multiple possible ports found. Enter the number for the ORCHID receiver:")
+    for i, (p, score) in enumerate(candidates):
+        print(f"    [{i}] {p.device:<12} {p.description or 'No description'}")
+    print(f"    [a] Show all {len(all_ports)} ports")
+    while True:
+        try:
+            choice = input("  Your choice: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            sys.exit(0)
+        if choice == 'a':
+            for i, p in enumerate(all_ports):
+                print(f"    [{i}] {p.device:<12} {p.description or 'No description'}")
+            for i, (p, _) in enumerate(candidates):
+                print(f"    [{len(all_ports) + i}] {p.device} (suggested)")
+            continue
+        try:
+            idx = int(choice)
+            if 0 <= idx < len(candidates):
+                return candidates[idx][0].device
+            if 0 <= idx < len(all_ports):
+                return all_ports[idx].device
+        except ValueError:
+            pass
+        print("  Invalid choice. Enter a number from the list.")
+
+
+def _load_cached_port():
+    try:
+        with open(_PORT_CACHE_FILE, 'r') as f:
+            return f.read().strip()
+    except OSError:
+        return None
+
+
+def _save_cached_port(port):
+    try:
+        with open(_PORT_CACHE_FILE, 'w') as f:
+            f.write(port)
+    except OSError:
+        pass
+
+
 def find_serial_port():
+    """Detect the ORCHID receiver's COM port with multi-stage fallback."""
+
+    # 0. Hard-coded override in config
     if SERIAL_PORT:
+        print(f"→ Using configured port: {SERIAL_PORT}")
         return SERIAL_PORT
 
-    ports = serial.tools.list_ports.comports()
-    if not ports:
-        print("❌ No serial ports found.")
-        print("   Make sure the receiver is plugged into USB.")
-        sys.exit(1)
+    # 1. Try the cached port from last successful run
+    cached = _load_cached_port()
+    if cached:
+        all_ports = serial.tools.list_ports.comports()
+        if any(p.device == cached for p in all_ports):
+            print(f"→ Using last known port: {cached}")
+            return cached
+        else:
+            print(f"   Last known port {cached} not found — rescanning...")
 
-    print("Available serial ports:")
-    for i, p in enumerate(ports):
-        print(f"  [{i}] {p.device} — {p.description}")
+    # 2. Scan and score
+    while True:
+        candidates, all_ports = _list_candidates()
 
-    # Prefer USB serial devices on Windows and ttyACM / ttyUSB devices on Linux.
-    usb_ports = [
-        p for p in ports
-        if any(k in p.device.lower() for k in ['ttyacm', 'ttyusb'])
-        or any(k in (p.description or '').lower() for k in [
-            'cp210', 'ch340', 'usb serial', 'jtag', 'esp32', 'heltec', 'tinyusb', 'cdc'
-        ])
-    ]
+        if not all_ports:
+            print("⚠️  No serial ports found. Plug in the receiver and press Enter to retry...")
+            try:
+                input()
+            except (EOFError, KeyboardInterrupt):
+                sys.exit(0)
+            continue
 
-    # Among USB ports, prefer known ESP32 chip descriptions
-    for p in usb_ports:
-        desc = (p.description or '').lower()
-        if any(k in desc for k in ['cp210', 'ch340', 'usb serial', 'jtag', 'esp32', 'heltec', 'tinyusb', 'cdc']):
-            print(f"→ Auto-selected: {p.device} ({p.description})")
-            return p.device
+        if not candidates:
+            print("\n⚠️  No recognised ORCHID receiver found.")
+            print("   Available ports:")
+            for p in all_ports:
+                print(f"     {p.device:<12} {p.description or 'No description'}")
+            print("\n   If the receiver is plugged in, enter its COM port manually")
+            print("   (e.g. COM3 or /dev/ttyUSB0), or press Enter to rescan:")
+            try:
+                manual = input("  Port: ").strip()
+            except (EOFError, KeyboardInterrupt):
+                sys.exit(0)
+            if manual:
+                return manual
+            continue
 
-    # Fall back to first USB port
-    if usb_ports:
-        print(f"→ Using first USB port: {usb_ports[0].device}")
-        return usb_ports[0].device
+        # 3. Single strong candidate — use it automatically
+        best_port, best_score = candidates[0]
+        if best_score >= 100 or len(candidates) == 1:
+            print(f"→ Auto-selected: {best_port.device} ({best_port.description or 'USB serial'})")
+            _save_cached_port(best_port.device)
+            return best_port.device
 
-    # Last resort: first port in list
-    print(f"→ Using first port: {ports[0].device}")
-    return ports[0].device
+        # 4. Multiple plausible candidates — ask the user
+        chosen = _ask_user(candidates, all_ports)
+        _save_cached_port(chosen)
+        return chosen
 
 # ============================================================
 # DATABASE SETUP
@@ -232,6 +352,7 @@ def main():
     print(f"✅ Opening serial port: {port} @ {BAUD_RATE}")
 
     ser = serial.Serial(port, BAUD_RATE, timeout=2)
+    _save_cached_port(port)
     time.sleep(2)  # Wait for ESP32 to settle
 
     print("🟢 Listening for packets... (Ctrl+C to stop)")
@@ -256,6 +377,7 @@ def main():
                         port = find_serial_port()
                         ser = serial.Serial(port, BAUD_RATE, timeout=2)
                         ser.reset_input_buffer()
+                        _save_cached_port(port)
                         print(f"✅ Reconnected to {port}")
                         break
                     except Exception as reconnect_err:
