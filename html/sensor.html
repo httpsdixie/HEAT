@@ -960,20 +960,21 @@
     }
 
     .dashboard-viewport--sensor-table-view > .section-telemetry.sensor-activity-view {
-      flex: 0 0 auto;
-      min-height: 0;
+      flex: 1 0 360px;
+      min-height: 360px;
     }
 
     .sensor-activity-view .sensor-list-card {
-      flex: 0 0 auto;
-      height: auto;
+      flex: 1 1 0;
       min-height: 0;
       gap: 12px;
+      overflow: hidden;
     }
 
     .sensor-activity-view .sensor-table-wrap {
       align-self: stretch;
-      flex: 0 0 auto;
+      flex: 1 1 auto;
+      min-height: 0;
       width: auto;
     }
 
