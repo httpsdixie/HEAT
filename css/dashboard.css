@@ -518,12 +518,11 @@
 }
 
 .hi-analysis-control-card.show-locations .orchid-date-filter,
-.hi-analysis-control-card.show-locations .hi-history-tools,
-.hi-analysis-control-card.show-locations .hi-telemetry-date-tools {
+.hi-analysis-control-card.show-locations .hi-history-tools {
   display: contents;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-quick-range {
+.hi-analysis-control-card.show-locations .hi-history-search {
   order: 1;
 }
 
@@ -531,12 +530,16 @@
   order: 2;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-status-filter {
+.hi-analysis-control-card.show-locations .hi-history-reset {
   order: 3;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-export-menu {
+.hi-analysis-control-card.show-locations .hi-history-status-filter {
   order: 4;
+}
+
+.hi-analysis-control-card.show-locations .hi-history-export-menu {
+  order: 5;
 }
 
 .hi-analysis-control-card.show-locations .hi-history-export {
