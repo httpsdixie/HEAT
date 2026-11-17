@@ -190,8 +190,7 @@
     const activityCount = document.getElementById('sensor-activity-count');
     if (!body || !paginationMount) return;
 
-    const pageSize = activityPageSize;
-    const offset   = (page - 1) * pageSize;
+    const pageSize = activityPageSize;    const offset   = (page - 1) * pageSize;
 
     // Show loading state
     const loadingRow = document.createElement('tr');
@@ -284,6 +283,22 @@
       pageSize,
       page,
       onChange: (newPage) => renderSensorActivity(newPage)
+    });
+
+    // After render, recalculate page size based on actual row height
+    requestAnimationFrame(() => {
+      const wrap = document.querySelector('.sensor-activity-view .sensor-table-wrap');
+      const thead = document.querySelector('.sensor-activity-view .sensor-table thead');
+      const firstRow = document.querySelector('.sensor-activity-view .sensor-table tbody tr');
+      if (!wrap || !firstRow) return;
+      const headerH = thead ? thead.getBoundingClientRect().height : 44;
+      const rowH = firstRow.getBoundingClientRect().height;
+      if (rowH < 1) return;
+      const newSize = Math.max(5, Math.floor((wrap.clientHeight - headerH - 2) / rowH));
+      if (newSize !== activityPageSize) {
+        activityPageSize = newSize;
+        renderSensorActivity(1);
+      }
     });
   }
 
@@ -1471,7 +1486,9 @@
         clearTimeout(activityResizeTimer);
         activityResizeTimer = setTimeout(() => {
           const headerH = activityTableHeader ? activityTableHeader.getBoundingClientRect().height : 44;
-          const rowH = 46;
+          // measure an actual rendered row if available, otherwise fall back to 46px
+          const firstRow = document.querySelector('.sensor-activity-view .sensor-table tbody tr');
+          const rowH = firstRow ? firstRow.getBoundingClientRect().height : 46;
           const available = activityTableWrap.clientHeight - headerH - 2;
           const newSize = Math.max(5, Math.floor(available / rowH));
           if (newSize !== activityPageSize) {
