@@ -1262,7 +1262,17 @@
     historyExportButton?.addEventListener('click', () => {
       const isExpanded = historyExportButton.getAttribute('aria-expanded') === 'true';
       historyExportButton.setAttribute('aria-expanded', String(!isExpanded));
-      if (historyExportMenu) historyExportMenu.hidden = isExpanded;
+      if (historyExportMenu) {
+        historyExportMenu.hidden = isExpanded;
+        // Update labels to show current range
+        if (!isExpanded) {
+          const rangeLabel = selectedHeatIndexDateRangeLabel();
+          const csvBtn = historyExportMenu.querySelector('[data-history-export-format="csv"]');
+          const pdfBtn = historyExportMenu.querySelector('[data-history-export-format="pdf"]');
+          if (csvBtn) csvBtn.textContent = `Export as CSV (${rangeLabel})`;
+          if (pdfBtn) pdfBtn.textContent = `Export as PDF (${rangeLabel})`;
+        }
+      }
     });
     historyExportMenu?.addEventListener('click', (event) => {
       const item = event.target.closest('[data-history-export-format]');
