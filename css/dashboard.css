@@ -518,11 +518,12 @@
 }
 
 .hi-analysis-control-card.show-locations .orchid-date-filter,
-.hi-analysis-control-card.show-locations .hi-history-tools {
+.hi-analysis-control-card.show-locations .hi-history-tools,
+.hi-analysis-control-card.show-locations .hi-telemetry-date-tools {
   display: contents;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-search {
+.hi-analysis-control-card.show-locations .hi-history-quick-range {
   order: 1;
 }
 
@@ -530,16 +531,20 @@
   order: 2;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-reset {
+.hi-analysis-control-card.show-locations .hi-history-search {
   order: 3;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-status-filter {
+.hi-analysis-control-card.show-locations .hi-history-status-filter:not(.hi-history-quick-range) {
   order: 4;
 }
 
-.hi-analysis-control-card.show-locations .hi-history-export-menu {
+.hi-analysis-control-card.show-locations .hi-history-reset {
   order: 5;
+}
+
+.hi-analysis-control-card.show-locations .hi-history-export-menu {
+  order: 6;
 }
 
 .hi-analysis-control-card.show-locations .hi-history-export {
