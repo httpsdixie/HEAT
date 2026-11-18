@@ -3707,6 +3707,10 @@
   line-height: 1.4;
 }
 
+.logger-gap-banner[hidden] {
+  display: none;
+}
+
 .logger-gap-banner svg {
   flex-shrink: 0;
   color: #fbbf24;
