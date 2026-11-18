@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../css/theme.css?v=ormoc-navy-5" />
   <link rel="stylesheet" href="../css/layout.css?v=profile-settings-3" />
   <link rel="stylesheet" href="../vendor/leaflet/leaflet.css" />
-  <link rel="stylesheet" href="../css/dashboard.css?v=75" />
+  <link rel="stylesheet" href="../css/dashboard.css?v=76" />
 </head>
 <body>
 
@@ -20,6 +20,16 @@
 
     <!-- DASHBOARD CONTENT -->
     <main class="dashboard-viewport">
+
+      <!-- Logger stopped warning — shown when no node has reported recently -->
+      <div class="logger-gap-banner" id="logger-gap-banner" role="alert" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span id="logger-gap-banner-text">No sensor data received in the last 10 minutes. The serial logger may have stopped — check the terminal window.</span>
+      </div>
+
       <!-- SECTION 1: KEY METRICS -->
       <section class="section-metrics">
         <div class="section-header">

@@ -39,6 +39,9 @@ if errorlevel 2 exit /b 0
 if errorlevel 1 goto run_demo
 
 :run_real
+echo Running database backup...
+%PYTHON_EXE% scripts\backup_db.py
+if errorlevel 1 echo Warning: backup did not complete. Check DB\backups\.
 start "ORCHID serial logger" /b cmd /c "cd /d ""%~dp0DB"" && call run.bat"
 call :run_server %*
 exit /b %errorlevel%

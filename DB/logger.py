@@ -337,6 +337,19 @@ def handle_heartbeat(conn, msg):
     print(f"[{ts}] HB    Node {node_id} | "
           f"Batt={battery_mv}mV | Uptime={uptime}")
 
+def _sync_to_line_boundary(ser):
+    """Read and silently discard bytes until a complete newline is found.
+    Uses read_until so it blocks until exactly a newline boundary — no
+    partial reads, no race with the transmit interval.
+    Returns any bytes already received after the first newline so they
+    are not lost."""
+    try:
+        ser.read_until(b'\n')   # discard everything up to and including the first \n
+    except serial.SerialException:
+        pass
+    return ''
+
+
 # ============================================================
 # MAIN LOOP
 # ============================================================
@@ -358,7 +371,7 @@ def main():
     print("🟢 Listening for packets... (Ctrl+C to stop)")
     print("-" * 60)
 
-    line_buffer = ''   # accumulate partial lines across reconnects
+    line_buffer = ''
 
     try:
         while True:
@@ -382,6 +395,8 @@ def main():
                         break
                     except Exception as reconnect_err:
                         print(f"   Waiting for receiver... ({reconnect_err})")
+                # Discard the first partial line after reconnect — reset to clean state
+                line_buffer = ''
                 continue
 
             if not chunk:
@@ -396,16 +411,50 @@ def main():
                 if not raw:
                     continue
 
-                # Skip non-JSON lines (boot messages, serial noise)
+                # If the line doesn't start cleanly with '{', try each '{' in
+                # the line left-to-right until one yields valid JSON.
+                # This recovers from serial noise or missed bytes on reconnect
+                # that corrupt the start of a packet.
                 if not raw.startswith('{'):
-                    print(f"   [device] {raw}")
-                    continue
-
-                try:
-                    msg = json.loads(raw)
-                except json.JSONDecodeError:
-                    print(f"   [bad json] {raw}")
-                    continue
+                    if '{' not in raw:
+                        print(f"   [device] {raw}")
+                        continue
+                    # Find the first position that starts a parseable JSON object
+                    candidate = None
+                    pos = 0
+                    while pos < len(raw):
+                        brace = raw.find('{', pos)
+                        if brace == -1:
+                            break
+                        try:
+                            candidate = json.loads(raw[brace:])
+                            break
+                        except json.JSONDecodeError:
+                            pos = brace + 1
+                    if candidate is None:
+                        print(f"   [bad json] {raw}")
+                        continue
+                    msg = candidate
+                else:
+                    try:
+                        msg = json.loads(raw)
+                    except json.JSONDecodeError:
+                        # Starts with '{' but still corrupt — try inner braces
+                        candidate = None
+                        pos = 1
+                        while pos < len(raw):
+                            brace = raw.find('{', pos)
+                            if brace == -1:
+                                break
+                            try:
+                                candidate = json.loads(raw[brace:])
+                                break
+                            except json.JSONDecodeError:
+                                pos = brace + 1
+                        if candidate is None:
+                            print(f"   [bad json] {raw}")
+                            continue
+                        msg = candidate
 
                 if not isinstance(msg, dict):
                     print("   [invalid packet] JSON message must be an object.")

@@ -3691,3 +3691,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── Logger gap warning banner ──────────────────────────────── */
+.logger-gap-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.45);
+  border-radius: var(--radius, 8px);
+  color: #fde68a;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.logger-gap-banner svg {
+  flex-shrink: 0;
+  color: #fbbf24;
+}

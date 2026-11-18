@@ -555,6 +555,7 @@
       exportButton?.setAttribute('aria-expanded', 'false');
       if (item.dataset.exportFormat === 'csv') exportFleetCsv();
       else if (item.dataset.exportFormat === 'pdf') exportFleetPdf();
+      else if (item.dataset.exportFormat === 'placements-csv') exportPlacementsCsv();
     });
     document.addEventListener('click', (event) => {
       if (!exportMenu?.contains(event.target) && !exportButton?.contains(event.target)) {
@@ -802,6 +803,41 @@
       </body>
       </html>`);
     printWindow.document.close();
+  }
+
+  function exportPlacementsCsv() {
+    // Exports only the placed sensors: node ID, location name, lat, lon, and status.
+    // Unplaced nodes are excluded because they have no coordinates to export.
+    const placed = allSensors.filter((sensor) => !sensor.unplaced);
+    if (placed.length === 0) {
+      window.OrchidToast.show({
+        variant: 'warning',
+        title: 'No placements to export',
+        message: 'No sensors have been placed on the map yet.'
+      });
+      return;
+    }
+    const columns = [
+      ['Node ID',       (s) => s.id],
+      ['Location Name', (s) => s.location],
+      ['Latitude',      (s) => s.latitude],
+      ['Longitude',     (s) => s.longitude],
+      ['Status',        (s) => s.status],
+    ];
+    const escapeCsv = (value) => {
+      const text = value == null || value === '--' ? '' : String(value);
+      return `"${text.replace(/"/g, '""')}"`;
+    };
+    const csv = [
+      columns.map(([header]) => escapeCsv(header)).join(','),
+      ...placed.map((sensor) => columns.map(([, fn]) => escapeCsv(fn(sensor))).join(','))
+    ].join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `orchid-placements-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   // ──────────────────────────────────────────────────────────────────────────

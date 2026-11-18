@@ -3,6 +3,11 @@ set -eu
 
 cd "$(dirname "$0")"
 
+run_backup() {
+    echo "Running database backup..."
+    python3 scripts/backup_db.py || echo "Warning: backup did not complete. Check DB/backups/."
+}
+
 start_logger() {
     echo "Starting ORCHID serial logger..."
     (while true; do
@@ -14,6 +19,7 @@ start_logger() {
 }
 
 if [ ! -d demo ]; then
+    run_backup
     start_logger
     exec python3 scripts/serve.py "$@"
 fi
@@ -46,6 +52,7 @@ fi
 
 case "$choice" in
     "Real sensor database")
+        run_backup
         start_logger
         exec python3 scripts/serve.py "$@"
         ;;

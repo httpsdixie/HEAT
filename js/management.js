@@ -1301,7 +1301,7 @@
 
     const params = new URLSearchParams(window.location.search);
     const today = manilaDate();
-    selectedMetric = VALID_METRICS.includes(params.get('report')) ? params.get('report') : 'heat-index';
+    selectedMetric = VALID_METRICS.includes(params.get('report')) ? params.get('report') : 'all-telemetry';
     const urlFrom = params.get('from');
     const urlTo = params.get('to');
     const hasUrlDates = validDate(urlFrom) && validDate(urlTo) &&

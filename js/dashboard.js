@@ -1627,6 +1627,28 @@
 
   function renderFleetSummary() {
     initNodeMetrics();
+
+    // Show a warning banner when no node has reported data in the last 10 minutes.
+    // This almost always means the serial logger has stopped or crashed.
+    // Skip the check when a historical date range is loaded — lastSeen in that
+    // case reflects the selected past period, not the current live status.
+    const banner = document.getElementById('logger-gap-banner');
+    if (banner && SENSOR_NODES.length > 0) {
+      const today = manilaDateString(new Date());
+      const isHistoricalView = heatIndexStartDate && heatIndexEndDate && heatIndexEndDate !== today;
+      if (isHistoricalView) {
+        banner.hidden = true;
+      } else {
+        const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+        const hasRecentData = SENSOR_NODES.some((node) => {
+          if (!node.lastSeen) return false;
+          const t = new Date(node.lastSeen).getTime();
+          return Number.isFinite(t) && t >= tenMinutesAgo;
+        });
+        banner.hidden = hasRecentData;
+      }
+    }
+
     const deployedNodes = SENSOR_NODES.filter(isDeployedNode);
     const onlineDeployedNodes = deployedNodes.filter(isOnlineNode);
     const values = onlineDeployedNodes.map((node) => {
