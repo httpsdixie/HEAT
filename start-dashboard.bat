@@ -39,6 +39,12 @@ if errorlevel 2 exit /b 0
 if errorlevel 1 goto run_demo
 
 :run_real
+:: ── Kill any orphaned ORCHID processes from a previous session ────────────────
+:: This releases COM port locks left behind when the window was closed abruptly.
+echo Stopping any previous ORCHID processes...
+powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*logger.py*' -or $_.CommandLine -like '*serve.py*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"
+timeout /t 1 /nobreak >nul
+
 echo Running database backup...
 %PYTHON_EXE% scripts\backup_db.py
 if errorlevel 1 echo Warning: backup did not complete. Check DB\backups\.
@@ -55,5 +61,12 @@ call :run_server %*
 exit /b %errorlevel%
 
 :run_server
+:server_loop
 %PYTHON_EXE% scripts\serve.py %*
-exit /b %errorlevel%
+echo.
+echo ============================================================
+echo   ORCHID stopped. Restarting in 5 seconds...
+echo   Close this window only if you want to stop ORCHID.
+echo ============================================================
+timeout /t 5 /nobreak
+goto server_loop

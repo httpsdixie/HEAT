@@ -11,6 +11,7 @@ import math
 import sqlite3
 import sys
 import os
+import re
 import time
 from datetime import datetime, timezone
 
@@ -18,9 +19,31 @@ from datetime import datetime, timezone
 # CONFIGURATION
 # ============================================================
 SERIAL_PORT = None          # Set to 'COM4' etc. to force a specific port
+
+# Load .env from the project root (one level above DB/)
+def _load_env():
+    env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env')
+    env_file = os.path.normpath(env_file)
+    if not os.path.isfile(env_file):
+        return
+    with open(env_file, encoding='utf-8') as f:
+        for line in f:
+            entry = line.strip()
+            if not entry or entry.startswith('#') or '=' not in entry:
+                continue
+            name, value = entry.split('=', 1)
+            name, value = name.strip(), value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+                value = value[1:-1]
+            os.environ.setdefault(name, value)
+
+_load_env()
 BAUD_RATE   = 115200
 # Always resolve relative to this script's own directory (DB/)
-DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'orchid.db')
+DB_FILE = os.environ.get(
+    "ORCHID_DB_FILE",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'orchid.db')
+)
 
 
 def utc_timestamp():
@@ -390,6 +413,12 @@ def main():
                 try:
                     ser.close()
                 except Exception:
+                    pass
+                # Clear the cached port so find_serial_port does a fresh scan.
+                # The receiver may re-appear on a different COM port after replug.
+                try:
+                    os.remove(_PORT_CACHE_FILE)
+                except OSError:
                     pass
                 while True:
                     time.sleep(3)
