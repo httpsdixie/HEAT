@@ -153,7 +153,7 @@ def _save_cached_port(port):
         pass
 
 
-def find_serial_port():
+def find_serial_port(interactive=True):
     """Detect the ORCHID receiver's COM port with multi-stage fallback."""
 
     # 0. Hard-coded override in config
@@ -176,7 +176,10 @@ def find_serial_port():
         candidates, all_ports = _list_candidates()
 
         if not all_ports:
-            print("⚠️  No serial ports found. Plug in the receiver and press Enter to retry...")
+            print("⚠️  No serial ports found.")
+            if not interactive:
+                raise RuntimeError("No serial ports found")
+            print("   Plug in the receiver and press Enter to retry...")
             try:
                 input()
             except (EOFError, KeyboardInterrupt):
@@ -188,6 +191,8 @@ def find_serial_port():
             print("   Available ports:")
             for p in all_ports:
                 print(f"     {p.device:<12} {p.description or 'No description'}")
+            if not interactive:
+                raise RuntimeError("No recognised ORCHID receiver found")
             print("\n   If the receiver is plugged in, enter its COM port manually")
             print("   (e.g. COM3 or /dev/ttyUSB0), or press Enter to rescan:")
             try:
@@ -206,6 +211,8 @@ def find_serial_port():
             return best_port.device
 
         # 4. Multiple plausible candidates — ask the user
+        if not interactive:
+            raise RuntimeError("Multiple possible receiver ports found")
         chosen = _ask_user(candidates, all_ports)
         _save_cached_port(chosen)
         return chosen
@@ -387,7 +394,7 @@ def main():
                 while True:
                     time.sleep(3)
                     try:
-                        port = find_serial_port()
+                        port = find_serial_port(interactive=False)
                         ser = serial.Serial(port, BAUD_RATE, timeout=2)
                         ser.reset_input_buffer()
                         _save_cached_port(port)
