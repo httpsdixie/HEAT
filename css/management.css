@@ -219,6 +219,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  overflow: visible;
 }
 
 .report-metric-chart {
@@ -241,7 +242,7 @@
 .report-metric-chart-plot {
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 0;
+  min-height: 150px;
 }
 
 .report-metric-chart-plot .report-chart-svg {
