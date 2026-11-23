@@ -421,7 +421,7 @@
     const metricColumns = metricKeysForReport().map((metricKey) =>
       `${METRICS[metricKey].name} (${METRICS[metricKey].unit.trim()})`
     );
-    const columns = ['Timestamp', 'Node ID', 'Station / Location', ...metricColumns];
+    const columns = ['Timestamp', 'Node ID', 'Station / Location', ...metricColumns, 'Weather'];
     if (selectedMetric !== ALL_TELEMETRY) columns.push(METRICS[selectedMetric].band);
     return columns;
   }
@@ -430,7 +430,7 @@
     const metricValues = metricKeysForReport().map((metricKey) =>
       formatValue(record.metrics[metricKey], metricKey)
     );
-    const values = [record.timestampLabel, record.nodeId, record.location, ...metricValues];
+    const values = [record.timestampLabel, record.nodeId, record.location, ...metricValues, record.weather || ''];
     if (selectedMetric !== ALL_TELEMETRY) {
       values.push(metricBand(record.value, selectedMetric)[1]);
     }
@@ -442,7 +442,7 @@
       const value = record.metrics[metricKey];
       return value === null ? '' : value.toFixed(1);
     });
-    const values = [record.timestampLabel, record.nodeId, record.location, ...metricValues];
+    const values = [record.timestampLabel, record.nodeId, record.location, ...metricValues, record.weather || ''];
     if (selectedMetric !== ALL_TELEMETRY) {
       values.push(metricBand(record.value, selectedMetric)[1]);
     }
@@ -716,7 +716,8 @@
                 nodeId: node.id || node.key,
                 location: node.location || node.name || node.key,
                 value,
-                metrics
+                metrics,
+                weather: reading.weather || ''
               });
             });
           });

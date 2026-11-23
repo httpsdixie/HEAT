@@ -623,6 +623,7 @@
       ['Pressure (hPa)',   (r) => r.pressure ?? ''],
       ['Heat Index (°C)',  (r) => r.heatIndex ?? ''],
       ['Battery (mV)',     (r) => r.battery ?? ''],
+      ['Weather',          (r) => r.weather ?? ''],
     ];
   }
 
