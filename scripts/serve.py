@@ -765,9 +765,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 recent_params = []
                 for nrow in node_id_rows:
                     recent_parts.append(f"""
-                        SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, {heat_index_expression}
+                        SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, weather, {heat_index_expression}
                         FROM (
-                            SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, {heat_index_expression}
+                            SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, weather, {heat_index_expression}
                             FROM readings
                             WHERE node_id = ?
                             ORDER BY id DESC
@@ -793,7 +793,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     selected_date_rows = []
                     for nrow in node_id_rows:
                         rows_for_node = connection.execute(f"""
-                            SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, {heat_index_expression}
+                            SELECT node_id, created_at, temperature, humidity, pressure, battery_mv, weather, {heat_index_expression}
                             FROM readings
                             WHERE node_id = ?
                               AND created_at >= ?
@@ -831,7 +831,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                         "humidity": reading["humidity"],
                         "pressure": reading["pressure"],
                         "heatIndex": reading["heat_index"],
-                        "battery": reading["battery_mv"]
+                        "battery": reading["battery_mv"],
+                        "weather": reading["weather"]
                     })
 
             append_readings(recent_rows, recent_by_node)
