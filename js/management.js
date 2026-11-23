@@ -530,7 +530,10 @@
     const low = Math.min(...points.map((point) => point.value));
     const high = Math.max(...points.map((point) => point.value));
     const spread = high - low || Math.max(1, Math.abs(high) * 0.08);
-    const minimum = selectedChartType === 'bar' ? Math.min(0, low - spread * 0.15) : low - spread * 0.15;
+    const pressureBaseline = 900;
+    const minimum = metricKey === 'pressure'
+      ? pressureBaseline
+      : selectedChartType === 'bar' ? Math.min(0, low - spread * 0.15) : low - spread * 0.15;
     const maximum = selectedChartType === 'bar' ? Math.max(0, high + spread * 0.15) : high + spread * 0.15;
     const firstTimestamp = points[0].timestamp;
     const lastTimestamp = points[points.length - 1].timestamp;
