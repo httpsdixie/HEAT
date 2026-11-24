@@ -1022,9 +1022,15 @@
     if (!isNonHeatMetricPage) allValues.push(CAUTION);
     const rawMin = Math.min(...allValues);
     const rawMax = Math.max(...allValues);
-    const pad    = (rawMax - rawMin) * 0.15 || 2;
-    const yMin   = heatTrendChartType === 'bar' ? Math.min(0, Math.floor(rawMin - pad)) : Math.floor(rawMin - pad);
-    const yMax   = Math.ceil(rawMax  + pad);
+    const pad = isPressurePage
+      ? Math.max((rawMax - rawMin) * 0.15, 2)
+      : (rawMax - rawMin) * 0.15 || 2;
+    const yMin = isPressurePage
+      ? Math.floor(rawMin - pad)
+      : heatTrendChartType === 'bar'
+        ? Math.min(0, Math.floor(rawMin - pad))
+        : Math.floor(rawMin - pad);
+    const yMax = Math.ceil(rawMax + pad);
     const yRange = yMax - yMin;
 
     const toY = (v) => PAD_T + plotH - ((v - yMin) / yRange) * plotH;
@@ -1059,7 +1065,9 @@
     defs.appendChild(clip);
 
     // ── Grid lines + Y labels ────────────────────────────────────
-    const yStep   = yRange <= 8 ? 1 : yRange <= 16 ? 2 : 4;
+    const yStep = isPressurePage
+      ? yRange <= 12 ? 2 : yRange <= 40 ? 5 : 10
+      : yRange <= 8 ? 1 : yRange <= 16 ? 2 : 4;
     const yStart  = Math.ceil(yMin / yStep) * yStep;
     for (let v = yStart; v <= yMax; v += yStep) {
       const y = toY(v);
@@ -1171,7 +1179,9 @@
         : plotW;
       const groupWidth = Math.min(minGap * 0.8, 48 * seriesCount);
       const barWidth   = Math.max(3, groupWidth / seriesCount - 2);
-      const baseline   = toY(Math.max(yMin, 0));
+      const baseline = isPressurePage
+        ? toY(yMin)
+        : toY(Math.max(yMin, 0));
 
       bucketedSeries.forEach((s, seriesIndex) => {
         const color  = s.color;

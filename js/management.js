@@ -531,10 +531,14 @@
     const high = Math.max(...points.map((point) => point.value));
     const spread = high - low || Math.max(1, Math.abs(high) * 0.08);
     const pressureBaseline = 1000;
+    const pressureMinimum = Math.min(pressureBaseline, low - spread * 0.15);
+    const pressureMaximum = Math.max(pressureBaseline, high + spread * 0.15);
     const minimum = metricKey === 'pressure'
-      ? pressureBaseline
+      ? pressureMinimum
       : selectedChartType === 'bar' ? Math.min(0, low - spread * 0.15) : low - spread * 0.15;
-    const maximum = selectedChartType === 'bar' ? Math.max(0, high + spread * 0.15) : high + spread * 0.15;
+    const maximum = metricKey === 'pressure'
+      ? pressureMaximum
+      : selectedChartType === 'bar' ? Math.max(0, high + spread * 0.15) : high + spread * 0.15;
     const firstTimestamp = points[0].timestamp;
     const lastTimestamp = points[points.length - 1].timestamp;
     const x = (timestamp) => margin.left + (firstTimestamp === lastTimestamp
@@ -584,7 +588,7 @@
       const slotWidth = plotWidth / n;
       const barWidth = Math.max(2, slotWidth * 0.6);
       const radius = Math.min(4, barWidth / 4);
-      const baseline = y(0);
+      const baseline = metricKey === 'pressure' ? y(minimum) : y(Math.max(minimum, Math.min(0, maximum)));
       const xBar = (i) => margin.left + slotWidth * i + slotWidth / 2;
       points.forEach((point, i) => {
         const cx = xBar(i);
